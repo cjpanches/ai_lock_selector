@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+from typing import List as TypingList, Tuple
+
 
 class EdgeDetector:
     @staticmethod
@@ -66,3 +68,13 @@ class EdgeDetector:
         
         matrix = cv2.getPerspectiveTransform(pts1, pts2)
         return cv2.warpPerspective(image, matrix, (width, height))
+
+    @staticmethod
+    def find_contours_external(edges: np.ndarray) -> TypingList[np.ndarray]:
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        return contours
+
+    @staticmethod
+    def find_contours_hierarchical(edges: np.ndarray) -> Tuple[TypingList[np.ndarray], any]:
+        contours, hierarchy = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        return contours, hierarchy

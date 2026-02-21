@@ -1,119 +1,190 @@
+import cv2
 import numpy as np
+from typing import Optional, Tuple, List
+
 
 class GeometryCalculator:
     DIN_CYLINDER_WIDTH = 10.0
     DIN_CYLINDER_HEIGHT = 17.0
-    
+    BACKSET_TOLERANCE = 2.0
+    CENTER_DISTANCE_TOLERANCE = 3.0
+
     def __init__(self, scale_factor: float):
         self.scale_factor = scale_factor
-    
+
     def pixels_to_mm(self, pixels: float) -> float:
         return pixels / self.scale_factor
-    
+
     def mm_to_pixels(self, mm: float) -> float:
         return mm * self.scale_factor
-    
-    def calculate_backset(
-        self, 
-        cylinder_center: tuple, 
-        handle_square_center: tuple
-    ) -> float:
+
+    def calculate_distance(self, point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
         px_distance = np.sqrt(
-            (cylinder_center[0] - handle_square_center[0])**2 +
-            (cylinder_center[1] - handle_square_center[1])**2
+            (point1[0] - point2[0])**2 +
+            (point1[1] - point2[1])**2
         )
         return self.pixels_to_mm(px_distance)
-    
+
+    def calculate_backset(
+        self,
+        cylinder_center: Tuple[float, float],
+        handle_square_center: Tuple[float, float]
+    ) -> float:
+        return self.calculate_distance(cylinder_center, handle_square_center)
+
     def calculate_center_distance(
         self,
-        cylinder_center: tuple,
-        handle_center: tuple
+        cylinder_center: Tuple[float, float],
+        handle_center: Tuple[float, float]
     ) -> float:
-        return self.calculate_backset(cylinder_center, handle_center)
-    
-    def calculate_dimensions(self, bounding_box: tuple) -> dict:
+        return self.calculate_distance(cylinder_center, handle_center)
+
+    def calculate_dimensions(self, bounding_box: Tuple[int, int, int, int]) -> dict:
         x, y, w, h = bounding_box
         return {
             'width': self.pixels_to_mm(w),
             'height': self.pixels_to_mm(h),
         }
-    
+
     def calculate_hole_diameter(self, contour_points: np.ndarray) -> float:
         x, y, w, h = cv2.boundingRect(contour_points)
-        return self.pixels_to_mm((w + h) / 2)
-    
+        return self.pixels_to_mm(max(w, h))
+
     def estimate_thickness(self, contour: np.ndarray, image_shape: tuple) -> float:
         return 3.0
 
-import cv2
+    def calculate_plate_dimensions(
+        self,
+        contour_points: np.ndarray
+    ) -> dict:
+        x, y, w, h = cv2.boundingRect(contour_points)
+        return {
+            'width_mm': self.pixels_to_mm(w),
+            'height_mm': self.pixels_to_mm(h),
+        }
+
+    def is_within_tolerance(
+        self,
+        measured: float,
+        expected: float,
+        tolerance: float
+    ) -> bool:
+        return abs(measured - expected) <= tolerance
+
+
+class LockMeasurementResult:
+    def __init__(self):
+        self.scale_factor: float = 0.0
+        self.plate_width_mm: float = 0.0
+        self.plate_height_mm: float = 0.0
+        self.backset_mm: float = 0.0
+        self.center_distance_mm: float = 0.0
+        self.cylinder_hole_center: Optional[Tuple[float, float]] = None
+        self.handle_square_center: Optional[Tuple[float, float]] = None
+        self.handle_square_size_mm: float = 0.0
+        self.mounting_holes: list = []
+        self.confidence: float = 0.0
+
+    def to_dict(self) -> dict:
+        return {
+            'scale_factor': self.scale_factor,
+            'plate_width_mm': self.plate_width_mm,
+            'plate_height_mm': self.plate_height_mm,
+            'backset_mm': self.backset_mm,
+            'center_distance_mm': self.center_distance_mm,
+            'cylinder_hole_center': self.cylinder_hole_center,
+            'handle_square_center': self.handle_square_center,
+            'handle_square_size_mm': self.handle_square_size_mm,
+            'mounting_holes': self.mounting_holes,
+            'confidence': self.confidence,
+        }
+
 
 class MeasurementPipeline:
     def __init__(self, din_marker_width_mm: float = 10.0):
         self.din_marker_width_mm = din_marker_width_mm
-    
-    def process(self, image: np.ndarray, marker_bounding_box: tuple) -> dict:
+
+    def process(
+        self,
+        image: np.ndarray,
+        marker_bounding_box: Tuple[int, int, int, int]
+    ) -> dict:
         marker_x, marker_y, marker_w, marker_h = marker_bounding_box
-        
+
         scale_factor = marker_w / self.din_marker_width_mm
-        
+
         from contour_analyzer import ContourAnalyzer
         from edge_detector import EdgeDetector
-        
+
         edge_detector = EdgeDetector()
         gray = edge_detector.to_grayscale(image)
-        edges = edge_detector.canny_edge_detection(gray)
+        blurred = edge_detector.gaussian_blur(gray, sigma=1.5)
+        edges = edge_detector.canny_edge_detection(blurred, threshold1=50, threshold2=150)
         
-        contour_analyzer = ContourAnalyzer()
+        contours_external = edge_detector.find_contours_external(edges)
+
+        contour_analyzer = ContourAnalyzer(min_area=50, max_area=100000)
         contours = contour_analyzer.find_contours(edges)
-        
+
         plate_contour = contour_analyzer.find_plate_contour(contours)
-        handle_square = contour_analyzer.find_handle_square(contours)
-        mounting_holes = contour_analyzer.find_circular_holes(contours)
-        
+        handle_square = contour_analyzer.find_handle_square(contours, scale_factor)
+        mounting_holes = contour_analyzer.find_mounting_holes(contours, scale_factor)
+        cylinder_hole = contour_analyzer.find_cylinder_hole(contours, plate_contour)
+
         geometry_calc = GeometryCalculator(scale_factor)
-        
-        result = {
-            'scale_factor': scale_factor,
-            'dimensions': {},
-            'mounting_holes': [],
-            'handle_square': None,
-            'confidence': 0.5,
-        }
-        
+
+        result = LockMeasurementResult()
+        result.scale_factor = scale_factor
+
         if plate_contour:
-            result['dimensions'] = geometry_calc.calculate_dimensions(plate_contour.bounding_box)
-        
+            dims = geometry_calc.calculate_plate_dimensions(plate_contour.points)
+            result.plate_width_mm = dims['width_mm']
+            result.plate_height_mm = dims['height_mm']
+
         if handle_square:
-            result['handle_square'] = {
-                'x': geometry_calc.pixels_to_mm(handle_square.center[0]),
-                'y': geometry_calc.pixels_to_mm(handle_square.center[1]),
-                'size': geometry_calc.pixels_to_mm(handle_square.bounding_box[2]),
-            }
-        
+            result.handle_square_center = handle_square.center
+            result.handle_square_size_mm = geometry_calc.pixels_to_mm(
+                max(handle_square.bounding_box[2], handle_square.bounding_box[3])
+            )
+
+        if cylinder_hole:
+            result.cylinder_hole_center = cylinder_hole.center
+
+        if result.cylinder_hole_center and result.handle_square_center:
+            result.backset_mm = geometry_calc.calculate_backset(
+                result.cylinder_hole_center,
+                result.handle_square_center
+            )
+            result.center_distance_mm = result.backset_mm
+
         for hole in mounting_holes:
-            result['mounting_holes'].append({
+            result.mounting_holes.append({
                 'x': geometry_calc.pixels_to_mm(hole.center[0]),
                 'y': geometry_calc.pixels_to_mm(hole.center[1]),
-                'diameter': geometry_calc.pixels_to_mm(hole.bounding_box[2]),
+                'diameter': geometry_calc.calculate_hole_diameter(hole.points),
             })
-        
-        result['confidence'] = self._calculate_confidence(result)
-        
-        return result
-    
-    def _calculate_confidence(self, result: dict) -> float:
-        confidence = 0.4
-        
-        if len(result['mounting_holes']) >= 2:
-            confidence += 0.2
-        
-        if result['handle_square'] is not None:
-            confidence += 0.2
-        
-        if result['dimensions'].get('width', 0) > 20:
-            confidence += 0.1
-        
-        if result['dimensions'].get('height', 0) > 100:
-            confidence += 0.1
-        
+
+        result.confidence = self._calculate_confidence(result)
+
+        return result.to_dict()
+
+    def _calculate_confidence(self, result: LockMeasurementResult) -> float:
+        confidence = 0.0
+
+        if result.plate_width_mm > 20:
+            confidence += 0.15
+        if result.plate_height_mm > 80:
+            confidence += 0.15
+        if result.cylinder_hole_center is not None:
+            confidence += 0.25
+        if result.handle_square_center is not None:
+            confidence += 0.20
+        if len(result.mounting_holes) >= 2:
+            confidence += 0.15
+        if result.backset_mm > 0:
+            confidence += 0.10
+
         return min(confidence, 1.0)
+
+
+from typing import Tuple
