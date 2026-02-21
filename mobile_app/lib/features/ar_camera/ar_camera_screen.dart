@@ -61,18 +61,14 @@ class _ARCameraScreenState extends State<ARCameraScreen> with WidgetsBindingObse
     }
   }
 
-  void _onPanUpdate(DragUpdateDetails details) {
+  void _onScaleUpdate(ScaleUpdateDetails details) {
     setState(() {
       _maskPosition = Offset(
-        (_maskPosition.dx + details.delta.dx / MediaQuery.of(context).size.width).clamp(0.0, 1.0),
-        (_maskPosition.dy + details.delta.dy / MediaQuery.of(context).size.height).clamp(0.0, 1.0),
+        (_maskPosition.dx + details.focalPointDelta.dx / MediaQuery.of(context).size.width).clamp(0.0, 1.0),
+        (_maskPosition.dy + details.focalPointDelta.dy / MediaQuery.of(context).size.height).clamp(0.0, 1.0),
       );
+      _maskScale = (_maskScale * details.scale).clamp(0.5, 2.0);
     });
-    _checkAlignment();
-  }
-
-  void _onScaleUpdate(ScaleUpdateDetails details) {
-    setState(() => _maskScale = (_maskScale * details.scale).clamp(0.5, 2.0));
     _checkAlignment();
   }
 
@@ -115,9 +111,10 @@ class _ARCameraScreenState extends State<ARCameraScreen> with WidgetsBindingObse
           if (_isInitialized && _controller != null) CameraPreview(_controller!) else const Center(child: CircularProgressIndicator(color: Colors.white)),
           Positioned.fill(
             child: GestureDetector(
-              onPanUpdate: _onPanUpdate,
               onScaleUpdate: _onScaleUpdate,
-              child: CustomPaint(painter: DINMaskPainter(position: _maskPosition, scale: _maskScale, alignmentScore: _alignmentScore, isAligned: _isMaskAligned)),
+              child: RepaintBoundary(
+                child: CustomPaint(painter: DINMaskPainter(position: _maskPosition, scale: _maskScale, alignmentScore: _alignmentScore, isAligned: _isMaskAligned)),
+              ),
             ),
           ),
           SafeArea(
