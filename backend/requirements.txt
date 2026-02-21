@@ -1,0 +1,23 @@
+name: ai-lock-backend
+version: 1.0.0
+description: Backend API for AI Lock Selector app
+
+dependencies:
+  fastapi: ^0.109.0
+  uvicorn: ^0.27.0
+  sqlalchemy: ^2.0.25
+  asyncpg: ^0.29.0
+  pydantic: ^2.5.3
+  pydantic-settings: ^2.1.0
+  python-multipart: ^0.0.6
+  Pillow: ^10.2.0
+  numpy: ^1.26.3
+  opencv-python: ^4.9.0.80
+  python-jose: ^3.3.0
+  passlib: ^1.7.4
+  bcrypt: ^4.1.2
+  aiofiles: ^23.2.1
+
+dev_dependencies:
+  pytest: ^7.4.4
+  httpx: ^0.26.0

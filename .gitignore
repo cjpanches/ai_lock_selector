@@ -1,0 +1,48 @@
+# Flutter
+*.class
+*.log
+*.pyc
+*.pyc
+__pycache__/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+flutter_*.png
+
+# Android
+*.iml
+.android/
+.gradle/
+local.properties
+*.keystore
+!debug.keystore
+
+# Python
+venv/
+env/
+.env
+*.egg-info/
+dist/
+build/
+__pycache__/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backend
+*.db
+*.sqlite
+
+# APK
+*.apk
+!debug.apk

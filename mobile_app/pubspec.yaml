@@ -1,0 +1,35 @@
+name: ai_lock_selector
+description: AI Lock Selector - Measure door locks with AR
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  flutter_riverpod: ^2.4.9
+  camera: ^0.10.5+9
+  sensors_plus: ^4.0.2
+  image: ^4.1.4
+  dio: ^5.4.0
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  flutter_svg: ^2.0.9
+  equatable: ^2.0.5
+  uuid: ^4.2.2
+  intl: ^0.18.1
+  permission_handler: ^10.4.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/masks/
+    - assets/images/
