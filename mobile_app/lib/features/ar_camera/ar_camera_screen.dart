@@ -112,6 +112,7 @@ class _ARCameraScreenState extends State<ARCameraScreen> with WidgetsBindingObse
           Positioned.fill(
             child: GestureDetector(
               onScaleUpdate: _onScaleUpdate,
+              behavior: HitTestBehavior.opaque,
               child: RepaintBoundary(
                 child: CustomPaint(painter: DINMaskPainter(position: _maskPosition, scale: _maskScale, alignmentScore: _alignmentScore, isAligned: _isMaskAligned)),
               ),
