@@ -46,3 +46,7 @@ Thumbs.db
 # APK
 *.apk
 !debug.apk
+
+# Subsystem1
+subsystem1/logs/
+*.log

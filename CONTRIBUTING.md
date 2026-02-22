@@ -134,3 +134,57 @@ flutter build apk --debug
 cd backend
 docker build -t ai-lock-backend .
 ```
+
+---
+
+## Подсистема анализа AI-экспертов (Subsystem1)
+
+Структура для мульти-экспертного анализа проекта с использованием AI систем.
+
+### Структура директорий
+
+```
+subsystem1/
+├── subsystem1.py           # Main orchestrator
+├── INFO/                    # Входные данные и результаты
+│   ├── Grok/               # Эксперт Grok (xAI)
+│   ├── Gemini/             # Эксперт Gemini (Google)
+│   ├── GPT/                # Эксперт GPT (OpenAI)
+│   ├── Copilot/            # Эксперт Copilot (GitHub)
+│   ├── Analysis/           # Комбинированный анализ
+│   └── GENERAL PLAN/       # Супер-промты для AI
+├── FACT/                   # Фактический текущий анализ
+├── IDEAL PLAN/             # Идеальный план развития
+└── logs/                   # Логи (игнорятся в git)
+```
+
+### Использование Grok эксперта
+
+```bash
+# Запуск анализа
+cd subsystem1
+python subsystem1.py
+
+# Установка API ключа Grok (опционально)
+export GROK_API_KEY="your-api-key"
+```
+
+### Добавление нового эксперта
+
+1. Создать директорию `INFO/{ExpertName}/`
+2. Добавить класс эксперта в `subsystem1.py`
+3. Обновить `Subsystem1Orchestrator`
+
+### Логирование
+
+Все действия логируются в:
+```
+subsystem1/logs/action_{YYYYMMDD}.log
+```
+
+### Тесты
+
+```bash
+cd subsystem1
+pytest test_subsystem1.py -v
+```
