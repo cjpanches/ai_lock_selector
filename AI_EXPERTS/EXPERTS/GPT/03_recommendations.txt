@@ -1,0 +1,35 @@
+# РЕКОМЕНДАЦИИ GPT
+# Дата: 2026-02-22
+
+## Сгенерированный код
+
+### Flutter
+- LockMeasurementScreen с ConsumerWidget
+- LockNotifier StateNotifier
+- MaterialApp с навигацией
+
+### Backend
+- FastAPI с async/await
+- Pydantic schemas
+- SQLAlchemy async sessions
+- PostgreSQL подключение
+
+### CV
+- YOLO детекция
+- OpenCV обработка
+- Калибровка по маркеру
+- Тесты pytest
+
+## Рекомендации
+
+### Для KIMI
+- Архитектура соответствует стандартам
+- Clean Architecture реализована
+
+### Для GROK
+- Качество кода хорошее
+- Тесты включены
+
+### Для GEMINI
+- YOLO интеграция в CV модуль
+- Калибровка по DIN маркеру

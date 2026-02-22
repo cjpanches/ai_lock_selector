@@ -1,0 +1,33 @@
+# АРХИТЕКТУРНЫЙ АНАЛИЗ - KIMI
+# Дата: 2026-02-22
+# Статус: ACTIVE
+
+## АНАЛИЗ
+
+Проект AI Lock Selector находится в хорошем рабочем состоянии. Основные компоненты (Flutter, Backend, CV) реализованы и работают. Главный пробел - отсутствие YOLO модели и реальных данных для обучения.
+
+## РЕАЛИЗОВАНО
+- Flutter приложение с Riverpod state management
+- GoRouter навигация
+- FastAPI backend с SQLite
+- CV модули (contour_analyzer, edge_detector, geometry_calculator)
+- 23/23 юнит-теста проходят
+- Экспертная система AI_EXPERTS
+
+## ТРЕБУЕТ ДОРАБОТКИ
+- YOLO модель для детекции замков
+- Датасет (500+ реальных фото замков)
+- PostgreSQL для production ( сейчас SQLite )
+- Flutter widget тесты
+
+## ПЛАН (приоритетный)
+
+1. **P0**: Сбор датасета (500+ фото замков)
+2. **P0**: Обучение YOLO модели
+3. **P1**: Замена SQLite на PostgreSQL для production
+4. **P2**: Добавить Flutter widget тесты
+
+## РИСКИ
+- Нет реальных фото для обучения YOLO - требуется ручной сбор
+- Точность CV может быть ниже ±1.5 мм без YOLO
+- Нет production-ready DB (SQLite не для прода)

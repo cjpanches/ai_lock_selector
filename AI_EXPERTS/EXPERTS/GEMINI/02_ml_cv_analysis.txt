@@ -1,0 +1,47 @@
+# ML/CV АНАЛИЗ - GEMINI
+# Дата: 2026-02-22
+
+## ТЕКУЩЕЕ СОСТОЯНИЕ
+
+### CV Pipeline
+- **Оценка:** 3.1/10
+- **Проблемы:**
+  - Модули являются заглушками
+  - Нет коррекции дисторсии линзы
+  - Нет PnP solver
+  - Нет sub-pixel edge detection
+
+### Mobile AR
+- ARCore/ARKit даёт raw depth данные
+- Нет Homography/Projection matrix handler
+- Нет маппинга 2D → 3D
+
+### Backend CV
+- Есть базовые модули (contour, edge, geometry)
+- Но не хватает продвинутых функций
+
+## СТРАТЕГИЧЕСКИЕ РЕКОМЕНДАЦИИ
+
+### 1. Model Evolution
+- Вместо YOLOv8 boxes → YOLOv8-Pose
+- 6 keypoints: Handle_Center, Cylinder_Top, Cylinder_Bottom, Plate_Corners
+
+### 2. Hybrid Inference
+- Локальный OpenCV для edge tracking
+- Google Gemini 1.5 Pro API для визуального reasoning
+
+### 3. AR-to-Physical Mapping
+- Формула: $D_{phys} = (D_{px} \cdot Depth) / f_{length}$
+- Использовать camera intrinsics из Flutter AR session
+
+## ЗАДАЧИ
+
+### P0
+1. Заменить STUB в cv_pipeline/
+2. Реализовать LockGeometry class
+3. Sub-pixel edge detection
+
+### P1
+1. PnP solver
+2. Коррекция дисторсии
+3. Интеграция с Gemini API

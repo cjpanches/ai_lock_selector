@@ -1,0 +1,33 @@
+# ВХОДНЫЕ ДАННЫЕ - ГЕНЕРАЦИЯ КОДА
+# Эксперт: GPT v2.0.0
+# Дата создания: 2026-02-22
+# Дата изменения: 2026-02-22
+# Статус: ACTIVE
+
+## История изменений
+- 2026-02-22 v1.0.0 - Генерация кода для Flutter, Backend, CV
+
+## Источник данных
+- Репозиторий: https://github.com/cjpanches/ai_lock_selector
+- Локальная копия: /home/bot/porojects/ai_lock_project/
+- Ветка: develop
+
+## Контекст
+Генерация кода для Flutter, Backend и CV модулей на основе анализа KIMI и GROK.
+
+## Предоставленный код
+
+### Flutter
+- LockMeasurementScreen - экран измерения
+- lock_provider.dart - StateNotifier с ImagePicker
+- main.dart - навигация
+
+### Backend
+- FastAPI с PostgreSQL
+- Pydantic schemas
+- SQLAlchemy async
+
+### CV
+- YOLO детекция
+- OpenCV обработка
+- Калибровка по маркеру

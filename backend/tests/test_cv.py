@@ -3,7 +3,7 @@ import numpy as np
 import sys
 from pathlib import Path
 
-cv_path = Path(__file__).parent.parent / "cv_pipeline" / "src"
+cv_path = Path(__file__).parent.parent.parent / "cv_pipeline" / "src"
 sys.path.insert(0, str(cv_path))
 
 
@@ -34,8 +34,8 @@ class TestGeometryCalculator:
 
         calc = GeometryCalculator(scale_factor=10.0)
         assert calc.is_within_tolerance(55, 55, 2) == True
-        assert calc.is_within_tolerance(55, 58, 2) == True
-        assert calc.is_within_tolerance(55, 60, 2) == False
+        assert calc.is_within_tolerance(55, 57, 2) == True
+        assert calc.is_within_tolerance(55, 58, 2) == False
 
 
 class TestEdgeDetector:

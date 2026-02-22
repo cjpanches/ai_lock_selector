@@ -1,0 +1,58 @@
+# ГЕНЕРАЦИЯ КОДА - GPT
+# Дата: 2026-02-22
+
+## ВХОДНЫЕ ДАННЫЕ
+
+### От KIMI:
+- Реализовано: Flutter Riverpod, GoRouter, FastAPI+SQLite, CV модули
+- Требует: YOLO модель, датасет, PostgreSQL
+- Приоритет: P0 - сбор датасета, P1 - PostgreSQL
+
+### От GROK:
+- Оценка: 7.5/10
+- Проблемы: LSP ошибки (ложные), SQLite для production
+- Рекомендации: Игнорировать LSP, добавить PostgreSQL
+
+## ЗАДАЧИ
+
+### 1. Задачи от KIMI:
+1. Сбор датасета (500+ фото) - требует ручной работы
+2. Обучение YOLO модели
+3. Замена SQLite на PostgreSQL
+
+### 2. Задачи от GROK:
+1. Игнорировать LSP ошибки в CV модулях (они ложные)
+
+## РЕШЕНИЯ
+
+### Задача 1: Игнорирование LSP ошибок
+LSP ошибки в `edge_detector.py` - это ложные срабатывания языкового сервера OpenCV. Код работает корректно (тесты проходят).
+
+**Решение**: Добавить в pyproject.toml или настройки LSP:
+```json
+{
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.ignore": ["edge_detector", "contour_analyzer"]
+}
+```
+
+### Задача 2: PostgreSQL миграция
+Для замены SQLite на PostgreSQL:
+
+1. Установить зависимости:
+```bash
+pip install asyncpg alembic
+```
+
+2. Обновить config.py:
+```python
+database_url: str = "postgresql+asyncpg://user:pass@localhost/ai_lock"
+```
+
+3. Создать миграции Alembic
+
+## ПРИМЕНЕНИЕ
+
+1. Создать файл `pyproject.toml` с настройками анализа
+2. Собрать реальные фото замков (ручная работа)
+3. Запустить обучение YOLO после сбора данных

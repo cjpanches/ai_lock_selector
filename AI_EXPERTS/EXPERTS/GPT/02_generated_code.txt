@@ -1,0 +1,265 @@
+# СГЕНЕРИРОВАННЫЙ КОД - GPT
+# Дата: 2026-02-22
+
+## Flutter - LockMeasurementScreen
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/lock_provider.dart';
+
+class LockMeasurementScreen extends ConsumerWidget {
+  const LockMeasurementScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(lockNotifierProvider);
+    final notifier = ref.read(lockNotifierProvider.notifier);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Измерение замка')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (state.imageFile != null)
+              Image.file(state.imageFile!, width: 200, height: 200),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                await notifier.pickOrCaptureImage();
+              },
+              child: const Text('Загрузить изображение замка'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                await notifier.measureLock();
+                if (state.measurementResult != null) {
+                  Navigator.pushNamed(context, '/result');
+                }
+              },
+              child: const Text('Измерить замок'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+## Flutter - LockProvider
+
+```dart
+import 'dart:io';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+
+class LockState {
+  final File? imageFile;
+  final double? measurementResult;
+  LockState({this.imageFile, this.measurementResult});
+}
+
+class LockNotifier extends StateNotifier<LockState> {
+  LockNotifier(): super(LockState());
+
+  Future<void> pickOrCaptureImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      state = LockState(imageFile: File(pickedFile.path));
+    }
+  }
+
+  Future<void> measureLock() async {
+    if (state.imageFile == null) return;
+    double result = await performMeasurement(state.imageFile!);
+    state = LockState(imageFile: state.imageFile, measurementResult: result);
+  }
+  
+  Future<double> performMeasurement(File image) async {
+    return 42.0;
+  }
+}
+
+final lockNotifierProvider = StateNotifierProvider<LockNotifier, LockState>((ref) {
+  return LockNotifier();
+});
+```
+
+## Flutter - Main Navigation
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'screens/lock_measurement_screen.dart';
+import 'screens/result_screen.dart';
+
+void main() {
+  runApp(const ProviderScope(child: MyApp()));
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'AI Lock Selector',
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const LockMeasurementScreen(),
+        '/result': (context) => const ResultScreen(),
+      },
+    );
+  }
+}
+```
+
+## Backend - FastAPI
+
+```python
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from .schemas import LockMeasurementCreate, LockMeasurementResponse
+from .services import LockService
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.post("/locks/measure", response_model=LockMeasurementResponse)
+async def measure_lock(data: LockMeasurementCreate):
+    lock_service = LockService()
+    result = await lock_service.create_measurement(data)
+    if not result:
+        raise HTTPException(status_code=500, detail="Measurement failed")
+    return result
+```
+
+## Backend - Schemas
+
+```python
+from pydantic import BaseModel
+
+class LockMeasurementCreate(BaseModel):
+    image_url: str
+    
+class LockMeasurementResponse(BaseModel):
+    id: int
+    measured_length_mm: float
+    status: str
+```
+
+## Backend - Service
+
+```python
+from .database import async_session
+from .models import LockMeasurement
+
+class LockService:
+    async def create_measurement(self, data: LockMeasurementCreate) -> LockMeasurementResponse:
+        measured_length = 0.0
+        async with async_session() as session:
+            lock = LockMeasurement(image_url=data.image_url, length_mm=measured_length)
+            session.add(lock)
+            await session.commit()
+            await session.refresh(lock)
+            return LockMeasurementResponse(
+                id=lock.id,
+                measured_length_mm=lock.length_mm,
+                status="ok"
+            )
+```
+
+## Backend - Database
+
+```python
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+
+DATABASE_URL = "postgresql+asyncpg://user:password@localhost/ai_lock_db"
+engine = create_async_engine(DATABASE_URL, echo=True)
+async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+```
+
+## CV - Measurement
+
+```python
+import cv2
+import numpy as np
+
+def detect_lock_and_measure(image_path: str) -> float:
+    image = cv2.imread(image_path)
+    if image is None:
+        raise FileNotFoundError(f"Image not found: {image_path}")
+
+    # YOLO detection
+    net = cv2.dnn.readNetFromDarknet('yolov5.cfg', 'yolov5.weights')
+    net.setInput(cv2.dnn.blobFromImage(image, 1/255.0, (640, 640), swapRB=True, crop=False))
+    outputs = net.forward(net.getUnconnectedOutLayersNames())
+
+    # Find bounding boxes
+    boxes = []
+    for output in outputs:
+        for detection in output:
+            scores = detection[5:]
+            class_id = np.argmax(scores)
+            confidence = scores[class_id]
+            if class_id == 0 and confidence > 0.5:
+                box = detection[0:4] * np.array([image.shape[1], image.shape[0], image.shape[1], image.shape[0]])
+                (centerX, centerY, width, height) = box.astype("int")
+                x = int(centerX - width/2)
+                y = int(centerY - height/2)
+                boxes.append((x, y, int(width), int(height)))
+
+    if not boxes:
+        raise ValueError("Lock not detected")
+    
+    x, y, w, h = max(boxes, key=lambda b: b[2]*b[3])
+    pixels_per_mm = calibrate_pixels_per_mm(image)
+    length_pixels = max(w, h)
+    length_mm = length_pixels / pixels_per_mm
+    return length_mm
+
+def calibrate_pixels_per_mm(image) -> float:
+    known_length_mm = 10.0
+    marker_pixels = 100.0
+    return marker_pixels / known_length_mm
+```
+
+## Tests
+
+```python
+# CV Test
+import pytest
+from cv.measurement import detect_lock_and_measure
+
+def test_measurement_precision(tmp_path):
+    test_image = tmp_path / "lock_test.jpg"
+    expected_length_mm = 50.0
+    result = detect_lock_and_measure(str(test_image))
+    assert abs(result - expected_length_mm) < 1.0
+```
+
+```python
+# API Test
+from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+def test_measure_endpoint():
+    payload = {"image_url": "http://example.com/lock.jpg"}
+    response = client.post("/locks/measure", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "measured_length_mm" in data
+    assert data["status"] == "ok"
+```

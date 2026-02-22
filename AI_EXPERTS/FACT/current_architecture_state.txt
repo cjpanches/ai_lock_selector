@@ -1,0 +1,56 @@
+# ТЕКУЩЕЕ СОСТОЯНИЕ АРХИТЕКТУРЫ
+# AI Lock Selector
+# Дата: 2026-02-22
+
+## Общая оценка: 6.8/10
+
+## Компоненты
+
+### Mobile App (Flutter)
+- **Оценка:** 7.0/10
+- **Технологии:** Flutter 3.24+, Riverpod 2.4.9, GoRouter 13.2.0
+- **Состояние:** Готов
+- **Файлы:**
+  - lib/main.dart
+  - lib/core/router.dart
+  - lib/core/constants.dart
+  - lib/providers/*.dart
+  - lib/features/ar_camera/ar_camera_screen.dart
+  - lib/features/measurement/measurement_result_screen.dart
+
+### Backend (FastAPI)
+- **Оценка:** 7.2/10
+- **Технологии:** FastAPI, SQLAlchemy 2.0, SQLite, Pydantic v2
+- **Состояние:** Готов (тесты 23/23 проходят)
+- **Файлы:**
+  - app/main.py
+  - app/api/locks.py
+  - app/api/matching.py
+  - app/api/measurements.py
+  - app/api/cv.py
+  - app/services/matching_service.py
+  - app/db/models.py
+
+### CV Pipeline
+- **Оценка:** 6.0/10
+- **Технологии:** OpenCV 4.x, NumPy
+- **Состояние:** Базовые модули готовы, YOLO не обучен
+- **Файлы:**
+  - cv_pipeline/src/contour_analyzer.py
+  - cv_pipeline/src/edge_detector.py
+  - cv_pipeline/src/geometry_calculator.py
+  - cv_pipeline/src/lock_pipeline.py
+  - cv_pipeline/src/yolo_detector.py (wrapper)
+
+## Архитектурные решения
+
+### Clean Architecture
+- Flutter: domain → features → providers
+- Backend: api → services → db
+
+### State Management
+- Flutter: Riverpod
+- Backend: SQLAlchemy async sessions
+
+### Навигация
+- GoRouter с типизированными роутами

@@ -1,4 +1,4 @@
-from httpx import AsyncClient
+import httpx
 import pytest
 
 
@@ -6,7 +6,7 @@ import pytest
 async def test_root_endpoint():
     from app.main import app
     
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
         response = await client.get("/")
         assert response.status_code == 200
         assert "message" in response.json()
@@ -16,7 +16,7 @@ async def test_root_endpoint():
 async def test_health_endpoint():
     from app.main import app
     
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
         response = await client.get("/health")
         assert response.status_code == 200
         assert response.json()["status"] == "healthy"
@@ -26,7 +26,7 @@ async def test_health_endpoint():
 async def test_locks_endpoint():
     from app.main import app
     
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
         response = await client.get("/api/v1/locks")
         assert response.status_code == 200
         data = response.json()

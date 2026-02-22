@@ -1,0 +1,46 @@
+# РЕКОМЕНДАЦИИ GEMINI
+# Дата: 2026-02-22
+
+## Для KIMI (Architecture)
+
+### Приоритет P0
+1. **YOLO Dataset**
+   - Описание: Создать спецификацию датасета с 6 keypoints
+   - Классы: plate, handle, cylinder
+   - Критерии: 500+ размеченных изображений
+
+## Для GROK (Code Quality)
+
+### Приоритет P1
+1. **Bilateral Filter**
+   - Описание: Добавить cv2.bilateralFilter перед Canny
+   - Цель: Убрать шум на металлических поверхностях
+
+## Для GPT (Code Generation)
+
+### Приоритет P0
+1. **LockGeometry Class**
+   - Описание: Реализовать для перспективной коррекции
+   - Функции: affine transformations
+
+2. **MeasurementResult Object**
+   - Описание: Все CV результаты возвращать с confidence_score и error_margin_mm
+   - Формат: Pydantic v2
+
+### Приоритет P1
+1. **PnP Solver**
+   - Описание: Perspective-n-Point для 3D маппинга
+
+2. **Sub-pixel Detection**
+   - Описание: Повысить точность до <1.5mm
+
+## Требования к коду
+- Python 3.10+
+- Pydantic v2
+- NumPy vectorization
+- <200ms на кадр
+
+## Метрики
+- Точность: ±1.5mm
+- Время обработки: <200ms
+- Confidence score в каждом результате

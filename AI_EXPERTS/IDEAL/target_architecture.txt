@@ -1,0 +1,52 @@
+# ЦЕЛЕВАЯ АРХИТЕКТУРА
+# AI Lock Selector
+# Дата: 2026-02-22
+
+## Целевая оценка: 8.5/10
+
+## Mobile App
+### Цель:
+- Flutter с полной AR интеграцией
+- Каталог замков с поиском
+- Офлайн режим
+
+### Технологии:
+- Flutter 3.24+
+- Riverpod 2.5+
+- GoRouter 14+
+- ARCore/ARKit
+- Drift (local DB)
+
+## Backend
+### Цель:
+- PostgreSQL production-ready
+- Кэширование Redis
+- JWT аутентификация
+- Rate limiting
+
+### Технологии:
+- FastAPI
+- PostgreSQL 15+
+- SQLAlchemy 2.0 + Alembic
+- Pydantic v2
+- Redis
+- Docker
+
+## CV Pipeline
+### Цель:
+- YOLO модель для детекции
+- Точность ±1.5mm
+- Real-time обработка
+
+### Технологии:
+- OpenCV 4.8+
+- YOLOv8
+- ONNX Runtime
+- GPU ускорение
+
+## Метрики
+- API response time: < 200ms (p95)
+- AR FPS: > 30
+- CV accuracy: ±1.5mm
+- Покрытие тестами: > 70%
+- Доступность: 99.9%

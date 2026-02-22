@@ -1,0 +1,34 @@
+# ВХОДНЫЕ ДАННЫЕ - ML/CV ЭКСПЕРТ
+# Эксперт: GEMINI v2.0.0
+# Дата создания: 2026-02-22
+# Дата изменения: 2026-02-22
+# Статус: ACTIVE
+
+## История изменений
+- 2026-02-22 v1.0.0 - ML/CV анализ
+
+## Источник данных
+- Репозиторий: https://github.com/cjpanches/ai_lock_selector
+- Локальная копия: /home/bot/porojects/ai_lock_project/
+- Ветка: develop
+
+## Контекст
+ML/CV экспертиза проекта AI Lock Selector.
+
+## Результаты анализа
+
+### Текущее состояние
+- CV Pipeline: 3.1/10 (заглушки)
+- Backend: Есть модули, но cv_pipeline пустые
+- Mobile: ARCore/ARKit без коррекции
+
+### Стратегические рекомендации
+1. YOLOv8-Pose для 6 keypoints
+2. Гибридный inference (OpenCV + Gemini API)
+3. AR-to-Physical mapping
+
+### Задачи
+- cv_pipeline модули - заменить STUB
+- LockGeometry class для перспективы
+- Sub-pixel edge detection
+- PnP solver
