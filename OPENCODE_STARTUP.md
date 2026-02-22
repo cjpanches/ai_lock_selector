@@ -9,16 +9,16 @@
 
 ## ОСНОВНЫЕ ФАЙЛЫ:
 1. STARTUP.md - стартовые инструкции
-2. AI_EXPERTS/FACT/current_architecture_state.txt - текущее состояние
-3. AI_EXPERTS/IDEAL/target_architecture.txt - целевое состояние
+2. PROJECT_STATE.md - текущее состояние (обновлено)
+3. OPENCODE_MASTER_PROMPT.txt - мастер промт
 
 ## СТРУКТУРА ПРОЕКТА:
 - mobile_app/ - Flutter приложение (Riverpod + GoRouter)
-- backend/ - FastAPI сервер (SQLite, порт 8000)
-- cv_pipeline/src/ - Computer Vision (OpenCV)
-- AI_EXPERTS/ - Экспертная система
+- backend/ - FastAPI сервер (PostgreSQL/SQLite)
+- cv_pipeline/ - Computer Vision (OpenCV + YOLO)
+- datafordb/ - Данные для БД (181 замок)
 
-## ТЕКУЩЕЕ СОСТОЯНИЕ (независимая экспертиза):
+## ТЕКУЩЕЕ СОСТОЯНИЕ:
 
 ### Оценки экспертов:
 | Эксперт | Оценка |
@@ -30,52 +30,56 @@
 ### Компоненты:
 | Компонент | Оценка | Статус |
 |-----------|--------|--------|
-| Mobile App | 7.0/10 | Готов |
-| Backend | 7.2/10 | Готов |
-| CV Pipeline | 6.0/10 | Требует YOLO |
+| Mobile App | 7.0/10 | ✅ Готов |
+| Backend | 7.2/10 | ✅ Готов |
+| CV Pipeline | 6.0/10 | ⚠️ Нужен YOLO |
 | Тесты | 23/23 | ✅ Проходят |
 
-### Главные проблемы:
-1. Нет YOLO модели (критический)
-2. Нет датасета (500+ фото)
-3. SQLite не для production
-4. Flutter каталог не реализован
+### Выполненные задачи:
+1. ✅ PostgreSQL миграция (P0)
+2. ✅ Flutter Catalog Screen (P1)
+3. ✅ YOLO интеграция (структура)
+4. ✅ База данных замков (147 замков)
 
 ## ПЛАН РАЗВИТИЯ
 
 ### P0 (Критический):
-1. Сбор датасета (500+ фото замков)
-2. Обучение YOLO модели
-3. Интеграция YOLO в lock_pipeline
+1. ~~PostgreSQL миграция~~ ✅
+2. ~~База данных замков~~ ✅
+3. YOLO датасет (500+ фото) - требует ручного сбора
+4. Обучение YOLO
 
 ### P1 (Высокий):
-4. PostgreSQL миграция
-5. Flutter каталог замков
-6. Интеграция камеры
+5. ~~Flutter каталог~~ ✅
+6. Camera integration - AR камера
 
 ### P2 (Средний):
 7. Flutter widget тесты
 8. Type hints
 9. Документация
 
-## ТРЕБОВАНИЯ:
-- Точность CV: ±1.5mm
-- API response: < 200ms
-- Покрытие тестами: > 70%
+## КЛЮЧЕВЫЕ КОНСТАНТЫ
+
+### Маска отверстия под цилиндр:
+- EURO_CYLINDER_HOLE = "33x17" mm
+
+### Допуски:
+- BACKSET_TOLERANCE = ±2.0 mm
+- CENTER_DISTANCE_TOLERANCE = ±3.0 mm
 
 ## КОМАНДЫ ЗАПУСКА:
-Backend: cd /home/bot/porojects/ai_lock_project/backend && PYTHONPATH=. uvicorn app.main:app --reload
+Backend: cd /home/bot/porojects/ai_lock_project/backend && uvicorn app.main:app --reload
 Flutter: cd /home/bot/porojects/ai_lock_project/mobile_app && flutter run
 Тесты: cd /home/bot/porojects/ai_lock_project/backend && pytest
 
 ## ФАЙЛЫ ЭКСПЕРТОВ:
-- KIMI: AI_EXPERTS/EXPERTS/KIMI/analysis_result.md
-- GROK: AI_EXPERTS/EXPERTS/GROK/analysis_result.md
-- GPT: AI_EXPERTS/EXPERTS/GPT/analysis_result.md
-- GEMINI: AI_EXPERTS/EXPERTS/GEMINI/analysis_result.md
+- KIMI: AI_EXPERTS/EXPERTS/KIMI/master_prompt.md
+- GROK: AI_EXPERTS/EXPERTS/GROK/master_prompt.md
+- GPT: AI_EXPERTS/EXPERTS/GPT/master_prompt.md
+- GEMINI: AI_EXPERTS/EXPERTS/GEMINI/master_prompt.md
 
 ## СЛЕДУЮЩАЯ ЗАДАЧА:
-Определи приоритет: YOLO датасет, PostgreSQL миграция, или Flutter каталог
+По KIMI - следующий приоритет Camera Integration (P1)
 
 Проект: AI Lock Selector
 Ветка: develop

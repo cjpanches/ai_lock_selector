@@ -1,0 +1,260 @@
+
+function AddDynamicDoorhandle(obj, $objDynamicBuy) {
+	var $input = $(obj).siblings('input');
+	var id     = $input.attr('id').replace(/quantity_/, '');
+	var count  = $input.val();
+	
+	if(count!='' && count!=0)
+		AddItem(id, null, count);
+		
+	$objDynamicBuy.css('visibility','hidden');
+}
+
+function PreAddDoorhandle(obj, $objDynamicBuy) {
+	var $obj = $(obj);
+	
+	var new_offset = {
+		top:  ($obj.offset().top  - 9),
+		left: ($obj.offset().left - 46)
+	}
+	
+	$objDynamicBuy.find('input').attr('id', 'quantity_'+$obj.data('good-id')).val('');
+	$objDynamicBuy.offset(new_offset).css('visibility','visible');
+	$objDynamicBuy.find('input').focus();
+}
+
+
+var closeSelOptions = function($objList) {
+	$objList.removeClass('active');
+	$objList.siblings('.sel-data-holder').hide();
+	return false;
+}
+
+var openModal = function() {
+	
+	var $dialog = $("#dialog-modal").clone();
+	
+	var pos = {my: 'center', at: 'center', of: window}; // позиция модального окна по умолчанию
+	
+	var $last_dialog = $('div.ui-dialog.ui-widget:visible').last(); // последнее открытое видимое модальное окно
+	
+	// если есть открытые видимые модальные окна, то новое окно позиционируем относительно последнего
+	if($last_dialog.size()!=0) {
+		pos = {my: 'left top', at: 'left+30 top+30', of: $last_dialog};
+	}
+	
+	$dialog.dialog({
+		width: 570,
+		height: 'auto',
+		modal: false,
+		position: pos,
+		closeText: "Закрыть"
+	});
+	
+	var $sel_a = $dialog.find('.form-holder .field-holder a.sel');
+	var	$loader = $dialog.find('.loader');
+	
+	var $objDynamicBuy = $dialog.find('.count_to_buy_doorhandle');
+	
+	var objGet = {
+		'get_type': 'doorhandles'
+	};
+	
+	$sel_a.on('click', function() { // обработка клика на селекте
+		
+		var $self = $(this);
+		
+		var is_active = $self.is('.active'); // запоминаем текущее состояние
+		
+		closeSelOptions($sel_a); // закрываем открытые варианты
+		
+		if(!is_active) {
+			
+			var new_offset = {}; // используется для нового позиционирования последнего слоя с вариантами выбора
+			
+			var $data_holder = $self.addClass('active').siblings('.sel-data-holder');
+			
+			$data_holder.show();
+			
+			if($self.parent().is('.last')) { // последнее окно с вариантами выбора сдвигаем по горизонтали, чтобы оно не выходило за рамки контейнера
+				
+				new_offset.left = $self.offset().left - ($data_holder.outerWidth()-$self.outerWidth());
+				
+			}
+			
+			if(!!new_offset)
+				$data_holder.offset(new_offset);
+		}
+		
+		return false;
+	});
+	
+	
+	// сброс селектов к начальному состоянию
+	$dialog.find('.form-holder .reset a').on('click', function() {
+		
+		$loader.show();
+		
+		$dialog.find('.form-holder .field-holder .sel-data-holder a[data-value="0"]').each(function(){
+			change($(this));
+		});
+		
+		objGet.model = 0;
+		objGet.color = 0;
+		objGet.pad   = 0;
+		
+		process($dialog, $loader, objGet);
+		
+		return false;
+	});
+	
+	
+	// обработка клика на картинке закрытия одного из вариантов выбора
+	$dialog.find('.form-holder .field-holder .sel-data-holder .close').on('click', function(){
+		return closeSelOptions($(this).parent().siblings('a.sel'));
+	});
+	
+	
+	// обработка клика на варианте выбора
+	$dialog.find('.form-holder .field-holder .sel-data-holder').on('click', 'a', function(){
+		var $self = $(this);
+		var $sel  = $self.parents('.sel-data-holder').siblings('a.sel');
+		
+		$loader.show();
+		
+		change($self); // устанавливает выбранное значение
+		
+		objGet.changing_field = $sel.data('name');  // устанавливает имя изменяемого поля
+		
+		// определяем значения остальных полей
+		$self.parents('.form-holder').find('.field-holder').each(function(){
+			var $self = $(this);
+			
+			objGet[$self.find('a.sel').data('name')] = $self.find('.sel-data-holder a.selected').data('value');
+			
+		});
+		
+		process($dialog, $loader, objGet);
+		
+		return closeSelOptions($sel);
+	});
+	
+	// обработка клика на картинке варианте выбора (вызывается триггер для клика на ссылке)
+	$dialog.find('.form-holder .field-holder .sel-data-holder').on('click', 'img', function(){
+		$(this).siblings('a').trigger('click');
+		return false;
+	});
+	
+	
+	// добавление скрипта открытия товара в новом окне (по клику на ссылку)
+	$dialog.find('.products-table').on('click', 'a.nyroModal', function(){
+		return OpenGood(this);
+	});	
+	
+	// клик на ссылке для добавления в корзину
+	$dialog.find('.products-table').on('click', 'img.quantity_img', function(){
+		PreAddDoorhandle(this, $objDynamicBuy);
+		
+		return false;
+	});
+	
+	// клик на ссылке для добавления в корзину с указание количества товара
+	$objDynamicBuy.find('img').on('click', function(){
+		AddDynamicDoorhandle(this, $objDynamicBuy)
+		
+		return false;
+	});
+	
+	
+	return false;
+}
+
+function change($self) { // функция делает выбранный в псевдоселекте элемент отмеченным
+	
+	var $sel  = $self.parents('.sel-data-holder').siblings('a.sel');
+	
+	// устанавливает выбранное значение
+	$self.parents('.sel-data-holder').find('a,li').removeClass('selected');
+	$self.addClass('selected').parent().addClass('selected');
+	
+	$sel.text($self.text());
+}
+
+function process($dialog, $loader, objGet) {
+	
+	$.getJSON('/include/get_content.php', objGet, function(data) {
+			
+			var $sel = {};
+			
+			if(data.src) {
+				
+				// выводим фото товара
+				$dialog.find('.img-holder .err-holder').hide();
+				$dialog.find('.img-holder .good-img').show().attr('src', data.src);
+				if(data.is_patented)
+					$dialog.find('.img-holder .patented').show();
+				else
+					$dialog.find('.img-holder .patented').hide();
+				
+				// выводим список товаров
+				if(data.goods!='')
+					$dialog.find('.catalog .products-table').html(data.goods).parents('.catalog').show();
+				
+			}
+			else if(data.err) {
+				$dialog.find('.img-holder').find('.good-img, .patented').hide();
+				$dialog.find('.img-holder .err-holder').html(data.err).show();
+				
+				$dialog.find('.catalog').hide();
+			}
+			
+			for(name in data.options) {
+				$sel = $dialog.find('.form-holder .field-holder a[data-name="'+name+'"]');
+				
+				$sel.siblings('.sel-data-holder').find('.options-holder').html(data.options[name]); // заполняем варианты выбора
+				
+				if(data.filter[name]) { // устанавливаем выбранное имя в псевдоселекте
+					$sel.text($(data.options[name]).find('a[data-value="'+data.filter[name]+'"]').text());
+				}
+				
+			}	
+			
+			$loader.hide();
+			
+		}
+	);
+	
+}
+
+$(function() {
+	
+	// открытие слоя при клике на определенной ссылке
+	// слой откроется либо в родительском либо в текущем окне
+	$(document).on({
+		click: function(){
+		
+			//is_opener = Boolean(window.opener != null);
+		
+			var is_opener = false;
+		
+			if(window.location.href.indexOf('get_type=good') != -1 && window.opener != null) {
+				is_opener = true;
+			}
+		
+			// если нет опенера, то работаем с текущим окном
+			objW = is_opener?window.opener:window;
+		
+			if(is_opener) {
+				objW.openModal();
+				objW.focus();
+				window.close(); // закрываем текущее
+			}
+			else {
+				objW.openModal(); // если нет оперенра, то открываем ссылку в новом окне
+			}
+		
+			return false;
+		}		
+	},'a.doorhandle');
+	
+});

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../domain/models/capture_context.dart';
 import '../features/ar_camera/ar_camera_screen.dart';
 import '../features/measurement/measurement_result_screen.dart';
+import '../features/catalog/catalog_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -10,6 +11,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => const HomeScreen(),
+    ),
+    GoRoute(
+      path: '/catalog',
+      builder: (context, state) => const CatalogScreen(),
     ),
     GoRoute(
       path: '/camera',
@@ -62,7 +67,7 @@ class HomeScreen extends StatelessWidget {
                 icon: Icons.list_alt,
                 label: 'Каталог замков',
                 description: 'Просмотр ассортимента',
-                onTap: () {},
+                onTap: () => context.push('/catalog'),
               ),
               const Spacer(),
               _buildInfoSection(context),

@@ -23,7 +23,7 @@ SEED_LOCKS = [
         "body_width": 85.0,
         "body_height": 165.0,
         "body_depth": 13.0,
-        "cylinder_hole_diameter": 50.0,
+        "lock_cylinder_hole": "33x17",
         "square_hole_size": 8.0,
     },
     {
@@ -39,7 +39,7 @@ SEED_LOCKS = [
         "body_width": 85.0,
         "body_height": 165.0,
         "body_depth": 13.0,
-        "cylinder_hole_diameter": 50.0,
+        "lock_cylinder_hole": "33x17",
         "square_hole_size": 8.0,
     },
     {
@@ -84,7 +84,7 @@ SEED_LOCKS = [
         "body_width": 88.0,
         "body_height": 170.0,
         "body_depth": 14.0,
-        "cylinder_hole_diameter": 52.0,
+        "lock_cylinder_hole": "33x17",
         "square_hole_size": 9.0,
     },
     {
@@ -100,7 +100,7 @@ SEED_LOCKS = [
         "body_width": 90.0,
         "body_height": 180.0,
         "body_depth": 15.0,
-        "cylinder_hole_diameter": 50.0,
+        "lock_cylinder_hole": "33x17",
     },
 ]
 

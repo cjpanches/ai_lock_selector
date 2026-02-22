@@ -32,7 +32,10 @@ class Lock(Base):
     id = Column(Integer, primary_key=True, index=True)
     vendor_code = Column(String(50), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=False)
+    description = Column(Text)
     brand = Column(String(100), index=True)
+    series = Column(String(50))
+    color = Column(String(20))
     manufacturer_id = Column(Integer, ForeignKey("manufacturers.id"))
     
     type = Column(Enum(LockTypeEnum), nullable=False, index=True)
@@ -48,12 +51,32 @@ class Lock(Base):
     body_height = Column(Float)
     body_depth = Column(Float)
     
-    cylinder_hole_diameter = Column(Float)
+    lock_cylinder_hole = Column(String(20))
     square_hole_size = Column(Float)
+    
+    package_type = Column(String(20))
+    package_qty = Column(Integer)
+    minibox_qty = Column(Integer)
+    
+    purpose = Column(String(50))
+    for_entry_doors = Column(String(10))
+    for_interior_doors = Column(String(10))
+    mounting_type = Column(String(50))
+    
+    bolt_type = Column(String(50))
+    bolt_count = Column(Integer)
+    bolt_throw = Column(Float)
+    bolt_diameter = Column(Float)
+    
+    mechanism_type = Column(String(50))
+    key_type = Column(String(50))
+    key_count = Column(Integer)
+    cylinder_included = Column(String(20))
+    cylinder_size = Column(String(20))
+    cylinder_material = Column(String(50))
     
     image_url = Column(String(500))
     drawing_url = Column(String(500))
-    description = Column(Text)
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

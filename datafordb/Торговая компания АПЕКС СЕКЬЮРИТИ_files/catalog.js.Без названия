@@ -1,0 +1,95 @@
+(function($){
+	
+	$(function(){
+		
+		var catalog = $('#catalog'),
+			products = $('.products',catalog);
+		
+		$('.name',products).click(function(){
+			CloseCount();
+			$(this).parent().toggleClass('active');
+			return false;
+		});
+/*		
+		$('.close',products).click(function(){
+			CloseCount();
+			$(this).parent().removeClass('active');	
+			return false;
+		});
+*/		
+		$('.category-name a').not('.doorhandle').click(function(){
+			CloseCount();
+			$(this).parent().toggleClass('category-active').parent().toggleClass('act');
+			AddRemoveModels($(this).closest('.category-name').find('.goods_model_name:first').get(0));
+			return false;
+		});
+		
+	});
+
+	var filterForm = $('.filter-form');
+	var filterFormFilteredClass = 'filter-form_filtered'; // показывает количество выбранных фильтров и кнопку сброса
+	var filterFormAppliedClass = 'filter-form_applied'; // показывает кнопку сброса, когда загружена страница с использованными фильтрами
+	var filterDropdownClass = 'filter-dropdown';
+	var filterDropdownOpenedClass = 'filter-dropdown_opened'; // закрывает слой с фильтрами
+	var filterInputsClass = 'filter-collapse .check-input';
+	var filterInputs = $('.' + filterInputsClass);
+
+	/* Навешивает класс на выпадающий блок фильтров */
+	var openCloseFilter = function (filterDropdownElem, forceState) {
+		var isFilterOpened = filterDropdownElem.hasClass(filterDropdownOpenedClass);
+		filterDropdownElem.toggleClass(filterDropdownOpenedClass, typeof(forceState) == 'undefined' ? !isFilterOpened : forceState);
+	};
+    
+	/* Нажатие на кнопку открытия фильтров */
+	var onFilterButtonClick = function () {
+		var filterButton = $(this);
+		var filterDropdownElem = filterButton.closest('.' + filterDropdownClass);
+		openCloseFilter(filterDropdownElem);
+	};
+
+	$('.filter-button').on('click', onFilterButtonClick);
+
+	/* Нажатие на кнопку Применить в слое с фильтрами */
+	var onFilterApplyClick = function () {
+		var filterApplyButton = $(this);
+		var filterDropdownElem = filterApplyButton.closest('.' + filterDropdownClass);
+		openCloseFilter(filterDropdownElem, false);
+	}
+
+	$('.filter-apply').on('click', onFilterApplyClick);
+
+	/* Изменение фильтров-чекбоксов */
+	var onFilterInputChange = function () {
+		var checkedCount = $('.' + filterInputsClass + ':checked').length;
+		var isChecked = checkedCount > 0;
+        
+		$('.filter-apply').attr('disabled', isChecked ? null : 'disabled');
+
+		$('.filter-count').text(checkedCount);
+
+		filterForm.toggleClass(filterFormFilteredClass, isChecked);
+	};
+
+	filterInputs.on('change', onFilterInputChange);
+
+	/* Нажатие на кнопку Сбросить */
+	$('.filter-reset').on('click', function () {
+		filterInputs.removeAttr('checked').trigger('change');
+		if (filterForm.hasClass(filterFormAppliedClass)) $('.filter-apply').attr('disabled', null).trigger('click');
+	});
+
+	/* Нажатие вне выпадающего слоя с фильтрами */
+
+	$(document).click(function (evt) {
+		if ($('.' + filterDropdownOpenedClass).length) {
+
+			if ($(evt.target).closest('.' + filterDropdownClass).length || $(evt.target).closest('.filter-reset').length) {
+				return;
+			}
+
+			$('.' + filterDropdownClass).removeClass(filterDropdownOpenedClass);
+			evt.stopPropagation();
+		}
+	});
+
+})(jQuery);

@@ -54,13 +54,13 @@ class LockModelDTO(BaseModel):
     type: LockType
     backset: float
     center_distance: float
-    plate_width: float
-    plate_height: float
-    plate_thickness: float
-    body_width: float
-    body_height: float
-    body_depth: float
-    cylinder_hole_diameter: Optional[float] = None
+    plate_width: Optional[float] = None
+    plate_height: Optional[float] = None
+    plate_thickness: Optional[float] = None
+    body_width: Optional[float] = None
+    body_height: Optional[float] = None
+    body_depth: Optional[float] = None
+    cylinder_hole: Optional[str] = None
     square_hole_size: Optional[float] = None
     image_url: Optional[str] = None
     drawing_url: Optional[str] = None

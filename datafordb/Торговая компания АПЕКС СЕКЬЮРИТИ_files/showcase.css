@@ -1,0 +1,93 @@
+.present-block {
+    box-sizing: border-box;
+    height:300px;
+    width:740px;
+}
+.promo-slide {
+    display:block;
+    background-position:center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    -webkit-background-size: cover;
+    -o-background-size: cover;
+    -moz-background-size: cover;  
+    height:290px;
+}
+.owl-carousel .owl-stage-outer {
+    border-radius: 6px;
+}
+.owl-dots {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: 0px;
+    line-height: 0px;
+    padding-right:10px;
+    padding-left:10px;
+}
+.owl-dot {
+    position: relative;
+    display: inline-block;
+    margin:0;
+    width:24px;
+    height:18px;
+    background-color: transparent;
+}
+.owl-dot span {
+    position: absolute;
+    top: 8px;
+    left: 4px;
+    right: 4px;
+    display: block;
+    height: 2px;
+    background-color: rgba(51, 51, 51, 0.25);
+    border-radius: 2px;
+    -webkit-transition: background-color 0.2s ease;
+    -moz-transition: background-color 0.2s ease;
+    -o-transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease;
+}
+.owl-dot.active span {
+    background-color: #333333;
+}
+.owl-dot:hover span {
+    background-color: #ff7a00;
+}
+.promo-slides .owl-prev,
+.promo-slides .owl-next {
+    position: absolute;
+    display: flex;
+    top: calc(50% - 27px);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #ffffff;
+    box-shadow: 0 8px 16px 0 rgba(23, 10, 58, 0.1);
+}
+.promo-slides .owl-prev .arrow,
+.promo-slides .owl-next .arrow {
+    display: block;
+    width: 24px;
+    height: 24px;
+    margin: auto;
+    background-image: url(../images2/arrow.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 24px 24px;
+    transition-property: opacity;
+    transition-duration: 0.2s;
+}
+.promo-slides .owl-prev {
+    left: -18px;
+}
+.promo-slides .owl-next {
+    right: -18px;
+}
+.promo-slides .owl-next .arrow {
+    transform: rotate(180deg);
+}
+.promo-slides .owl-prev:not(:hover) .arrow,
+.promo-slides .owl-next:not(:hover) .arrow {
+    opacity: 0.5;
+}

@@ -132,7 +132,7 @@ class MatchingService:
             body_width=lock.body_width,
             body_height=lock.body_height,
             body_depth=lock.body_depth,
-            cylinder_hole_diameter=lock.cylinder_hole_diameter,
+            cylinder_hole=lock.lock_cylinder_hole,
             square_hole_size=lock.square_hole_size,
             image_url=lock.image_url,
             drawing_url=lock.drawing_url,

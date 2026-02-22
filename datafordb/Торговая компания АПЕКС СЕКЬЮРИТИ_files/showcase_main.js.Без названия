@@ -1,0 +1,47 @@
+$(document).ready(function() { 
+    if($('.promo-slides').length)
+    $(".promo-slides").owlCarousel({
+        dots:true,
+        nav:true,
+        navText:[
+            '<span class="arrow"></span>',
+            '<span class="arrow"></span>'
+        ],
+        loop:true,
+        animateOut: 'fadeOut',
+        slideBy:1,
+        autoplay:true,
+        autoplayTimeout:5000,
+        autoplayHoverPause:true,
+        navSpeed:300,
+        autoplaySpeed:300,
+        smartSpeed:300,
+        items:1
+    }); 
+
+    if ($('.new-list').length) {
+        $('.new-list').owlCarousel({
+            dots: false,
+            nav: true,
+            loop: true,
+            slideBy: 3,
+            smartSpeed: 300,
+            items: 3
+        });
+    }
+
+    if ($('.producers-list').length) {
+        $('.producers-list').owlCarousel({
+            dots: false,
+            nav: true,
+            navText:[
+                '<span class="arrow"></span>',
+                '<span class="arrow"></span>'
+            ],
+            loop: true,
+            slideBy: 1,
+            smartSpeed: 300,
+            items: 6
+        });
+    }
+});

@@ -1,0 +1,34 @@
+(function($){
+	
+	$.fn.mainMenu = function(){
+		
+		var menu = $(this),
+			w = 0, m = 0, 
+			buttons = $('.button',menu);
+		
+		buttons.each(function(){
+			w += $(this).width();					  
+		});
+		
+		if(buttons.length != 0) m = Math.floor((menu.width() - w) / buttons.length / 2);
+		if(m > 60) m = 60;
+		
+		// $('.m-link',menu).css({paddingLeft:9+m+'px',paddingRight:9+m+'px'});
+		// $('.submenu',menu).css({paddingLeft:12+m+'px',paddingRight:12+m+'px'});
+		
+		if( $.browser.msie && $.browser.version < 7){
+			$('.button.with-sub',menu).each(function(){
+				$(this).mouseover(function(){
+					$(this).addClass('hover');						   
+				});
+				$(this).mouseout(function(){
+					$(this).removeClass('hover');
+				});
+			});
+		}
+		
+	};
+
+})(jQuery);
+
+
