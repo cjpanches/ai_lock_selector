@@ -1,8 +1,8 @@
 # AI LOCK SELECTOR - ТЕКУЩЕЕ СОСТОЯНИЕ ПРОЕКТА
 # ==============================================
 # Дата: 2026-02-22
-# Версия: 3.0.1
-# Статус: Аудит проведён
+# Версия: 3.0.2
+# Статус: P0 баги исправлены
 
 ---
 
@@ -32,11 +32,11 @@
 
 | Компонент | Оценка | Статус |
 |-----------|--------|--------|
-| Mobile App | 7.0/10 | ✅ Готов |
+| Mobile App | 7.2/10 | ✅ Готов |
 | Backend | 7.2/10 | ✅ Готов |
 | CV Pipeline | 6.0/10 | ⚠️ Нужен YOLO |
-| Auto-Alignment | 5.0/10 | ⚠️ Баги (P0) |
-| **Общая** | **6.5/10** | Требует исправлений |
+| Auto-Alignment | 7.0/10 | ✅ Исправлено |
+| **Общая** | **7.0/10** | В разработке |
 
 ---
 
@@ -70,6 +70,12 @@
   - `package_type`, `package_qty`, `minibox_qty` - упаковка
   - `purpose`, `for_entry_doors`, `for_interior_doors` - назначение
   - `bolt_*`, `mechanism_type`, `key_*`, `cylinder_*` - тех. параметры
+
+### 5. P0 Bug Fixes (v3.0.2) ✅
+- Исправлен base64 encoding: `bytes.toString()` → `base64Encode(bytes)`
+- Исправлены размеры preview камеры: swap width/height
+- Проверен focal point delta: код корректный
+- Добавлены unit тесты для MaskNotifier
 
 ---
 
