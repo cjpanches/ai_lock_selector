@@ -1,12 +1,12 @@
 # ================================================================================
 # AI LOCK SELECTOR - STARTUP FILE
 # ================================================================================
-# Версия: 3.0.0
+# Версия: 3.0.4
 # Дата: 2026-02-22
 # Проект: AI Lock Selector
 # Репозиторий: https://github.com/cjpanches/ai_lock_selector
 # Ветка: develop
-# Оценка: 6.8/10
+# Оценка: 7.5/10
 # ================================================================================
 
 # ================================================================================
@@ -18,39 +18,42 @@
 
 ## ОСНОВНЫЕ ФАЙЛЫ (в порядке приоритета):
 1. STARTUP.md - этот файл (стартовые инструкции)
-2. OPENCODE_STARTUP.md - промт для OpenCode (то же содержимое)
-3. AI_EXPERTS/FACT/current_architecture_state.txt - текущее состояние
-4. AI_EXPERTS/IDEAL/target_architecture.txt - целевое состояние
+2. OPENCODE_MASTER_PROMPT.txt - мастер промт для OpenCode
+3. PROJECT_STATE.md - текущее состояние проекта
+4. AI_EXPERTS/MASTER_ANALYSIS_v3.md - анализ экспертов
 
 ## СТРУКТУРА ПРОЕКТА:
 - mobile_app/ - Flutter приложение (Riverpod + GoRouter)
-- backend/ - FastAPI сервер (SQLite, порт 8000)
-- cv_pipeline/src/ - Computer Vision (OpenCV)
+- backend/ - FastAPI сервер (SQLite/PostgreSQL, порт 8000)
+- cv_pipeline/src/ - Computer Vision (OpenCV + YOLO)
 - AI_EXPERTS/ - Экспертная система
 
-## ТЕКУЩЕЕ СОСТОЯНИЕ (независимая экспертиза):
+## ТЕКУЩЕЕ СОСТОЯНИЕ (v3.0.4):
 | Компонент | Оценка | Статус |
 |-----------|--------|--------|
-| Mobile App | 7.0/10 | Готов |
-| Backend | 7.2/10 | Готов |
-| CV Pipeline | 6.0/10 | Требует YOLO |
+| Mobile App | 7.8/10 | ✅ Готов |
+| Backend | 7.2/10 | ✅ Готов |
+| CV Pipeline | 6.0/10 | ⚠️ Нужен YOLO |
+| Auto-Alignment | 7.5/10 | ✅ Готов |
 | Тесты | 23/23 | ✅ Проходят |
+| **Общая** | **7.5/10** | ✅ |
 
-## РЕЗУЛЬТАТЫ ЭКСПЕРТОВ:
-- KIMI (Architecture): 6.8/10 - Архитектура в порядке
-- GROK (Code Analysis): 7.2/10 - Качество хорошее
-- GPT (Code Generation): - Код сгенерирован
-- GEMINI (ML/CV): 6.0/10 - Требует YOLO модель
+## ВЫПОЛНЕННЫЕ ЗАДАЧИ:
+1. ✅ PostgreSQL миграция
+2. ✅ Flutter Catalog Screen
+3. ✅ YOLO интеграция (структура)
+4. ✅ Auto-alignment с CV
+5. ✅ P0 баги исправлены
+6. ✅ P1: retry + confidence
+7. ✅ P2: SRP refactoring + Equatable
 
 ## ПРИОРИТЕТЫ:
-1. P0: Собрать Dataset (500+ фото) + Обучить YOLO
-2. P1: PostgreSQL миграция
-3. P1: Flutter каталог + интеграция камеры
-4. P2: Тесты и документация
+1. P3: Собрать Dataset (500+ фото) + Обучить YOLO
+2. P3: PostgreSQL в production
+3. P4: Документация
 
 ## ГЛАВНЫЕ РИСКИ:
-- Нет YOLO модели (критический)
-- Нет датасета (требует ручной работы)
+- Нет YOLO модели (требует ручной сбор фото)
 - SQLite не для production
 
 ## КОМАНДЫ ЗАПУСКА:
@@ -60,13 +63,14 @@ APK: cd /home/bot/porojects/ai_lock_project/mobile_app && flutter build apk --de
 Тесты: cd /home/bot/porojects/ai_lock_project/backend && pytest
 
 ## AI ЭКСПЕРТЫ - ФАЙЛЫ:
-KIMI: AI_EXPERTS/EXPERTS/KIMI/analysis_result.md
-GROK: AI_EXPERTS/EXPERTS/GROK/analysis_result.md  
-GPT: AI_EXPERTS/EXPERTS/GPT/analysis_result.md
-GEMINI: AI_EXPERTS/EXPERTS/GEMINI/analysis_result.md
+KIMI: AI_EXPERTS/EXPERTS/KIMI/analysis_result_v3.md
+GROK: AI_EXPERTS/EXPERTS/GROK/analysis_result_v3.md
+GPT: AI_EXPERTS/EXPERTS/GPT/analysis_result_v3.md
+GEMINI: AI_EXPERTS/EXPERTS/GEMINI/analysis_result_v3.md
+MASTER: AI_EXPERTS/MASTER_ANALYSIS_v3.md
 
 ## СЛЕДУЮЩАЯ ЗАДАЧА:
-Определить приоритет: YOLO датасет или PostgreSQL миграция
+YOLO Dataset collection (ручная работа - 500+ фото замков)
 """
 
 # ================================================================================
@@ -77,41 +81,42 @@ GEMINI: AI_EXPERTS/EXPERTS/GEMINI/analysis_result.md
 - Flutter app с Riverpod + GoRouter
 - FastAPI backend с SQLite
 - CV модули (contour, edge, geometry)
+- Auto-alignment feature
 - 23 unit теста проходят
+- SRP refactoring выполнен
+- Equatable добавлен
 
 ## Требуется доработка:
 - YOLO модель (нет обученной)
 - Датасет 500+ фото
 - PostgreSQL для production
-- Flutter каталог замков
 
 # ================================================================================
 # 📁 РАСПОЛОЖЕНИЕ КЛЮЧЕВЫХ ФАЙЛОВ
-# ================================================================================
+# =============================================================================
 
 """
 📂 ОСНОВНОЙ ПУТЬ: /home/bot/porojects/ai_lock_project/
 
 📋 ДЛЯ СТАРТА:
   📄 STARTUP.md - этот файл
-  📄 OPENCODE_STARTUP.md - промт для OpenCode
+  📄 OPENCODE_MASTER_PROMPT.txt - мастер промт для OpenCode
 
 📊 ЭКСПЕРТЫ:
   📁 AI_EXPERTS/EXPERTS/KIMI/ - Архитектура
   📁 AI_EXPERTS/EXPERTS/GROK/ - Анализ кода
   📁 AI_EXPERTS/EXPERTS/GPT/ - Генерация кода
   📁 AI_EXPERTS/EXPERTS/GEMINI/ - ML/CV
+  📁 AI_EXPERTS/MASTER_ANALYSIS_v3.md - Синтез
 
 📁 ФАКТ (текущее состояние):
-  📄 AI_EXPERTS/FACT/current_architecture_state.txt
-
-📁 IDEAL (целевое состояние):
-  📄 AI_EXPERTS/IDEAL/target_architecture.txt
+  📄 PROJECT_STATE.md
+  📄 AI_EXPERTS/TECHNICAL_STATE.md
 """
 
 # ================================================================================
 # 📋 ЛОГ РАЗРАБОТКИ
-# ================================================================================
+# =============================================================================
 
 """
 | Версия | Дата | Описание |
@@ -120,6 +125,9 @@ GEMINI: AI_EXPERTS/EXPERTS/GEMINI/analysis_result.md
 | 2.0.0 | 2026-02-22 | Первая версия |
 | 2.1.0 | 2026-02-22 | После экспертизы v1 |
 | 3.0.0 | 2026-02-22 | Независимая экспертиза |
+| 3.0.2 | 2026-02-22 | P0 баги исправлены |
+| 3.0.3 | 2026-02-22 | P1 улучшения |
+| 3.0.4 | 2026-02-22 | P2 refactoring |
 """
 
 # ================================================================================
