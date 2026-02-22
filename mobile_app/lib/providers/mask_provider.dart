@@ -89,13 +89,17 @@ class MaskNotifier extends StateNotifier<MaskState> {
     final targetWidthPx = 150.0;
     scale = targetWidthPx / detectedWidthPx;
     
+    final cvConfidence = confidence ?? 0.5;
+    final alignmentScore = cvConfidence.clamp(0.0, 1.0);
+    
     state = state.copyWith(
       position: Offset(normalizedX.clamp(0.0, 1.0), normalizedY.clamp(0.0, 1.0)),
       scale: scale.clamp(0.5, 2.0),
       detectedBounds: boundingBox,
       isAutoDetecting: false,
+      alignmentScore: alignmentScore,
+      isAligned: alignmentScore > 0.8,
     );
-    _checkAlignment();
   }
 
   void _checkAlignment() {

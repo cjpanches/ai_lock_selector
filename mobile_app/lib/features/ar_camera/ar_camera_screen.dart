@@ -231,6 +231,7 @@ class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBin
         if (detections.isNotEmpty) {
           final best = detections.first;
           final bbox = best['bbox'] as List?;
+          final confidence = (best['confidence'] as num?)?.toDouble();
           if (bbox != null && bbox.length == 4) {
             final screenSize = MediaQuery.of(context).size;
             final imageSize = Size(
@@ -247,6 +248,7 @@ class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBin
               ),
               imageSize: imageSize,
               screenSize: screenSize,
+              confidence: confidence,
             );
             return;
           }
