@@ -3,11 +3,10 @@ AI Expert System Orchestrator
 Координатор всех AI экспертов для проекта AI Lock Selector
 
 Этот модуль управляет работой всех экспертов:
-- GROK: Code Analysis
-- KIMI: Architecture
+- GROK: Code Analysis + Automation
+- KIMI: Architecture + Planning
 - GPT: Code Generation
 - GEMINI: ML/CV
-- COPILOT: Productivity
 """
 
 import os
@@ -38,7 +37,7 @@ class ExpertConfig:
 class ExpertOrchestrator:
     """Оркестратор экспертной системы"""
     
-    EXPERTS = ['GROK', 'KIMI', 'GPT', 'GEMINI', 'COPILOT']
+    EXPERTS = ['GROK', 'KIMI', 'GPT', 'GEMINI']
     
     def __init__(self):
         self.experts: Dict[str, ExpertConfig] = {}
