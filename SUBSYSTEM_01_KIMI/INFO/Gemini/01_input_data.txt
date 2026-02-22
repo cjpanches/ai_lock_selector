@@ -1,0 +1,39 @@
+# [НАЗНАЧЕНИЕ]
+# Входные данные для Gemini ML эксперта
+# Создан: 2026-02-22 14:30
+# Автор: KIMI_Architect_v1.0
+# Версия: 1.0.0
+# Статус: APPROVED
+
+## Описание
+Входные данные для Gemini ML/CV эксперта.
+
+## Зависимости
+- INFO/Gemini/00_SUPER_PROMPT_GEMINI.txt
+
+## История изменений
+- 2026-02-22 v1.0.0 - Первичная версия
+
+---
+
+# ДАННЫЕ ДЛЯ GEMINI ЭКСПЕРТА
+
+## Текущие задачи (P1)
+
+### 1. YOLO Integration
+- Интегрировать YOLOv8 в cv_pipeline
+- Обучить на реальных данных
+
+### 2. Dataset Creation
+- Собрать 500+ фото замков
+- Создать COCO аннотации
+
+### 3. Accuracy Improvement
+- Цель: >85% точность
+- Цель: <500ms inference
+
+## Контакты
+- KIMI: Architecture
+- Grok: CV Code
+- GPT: Code Gen
+- Copilot: IDE

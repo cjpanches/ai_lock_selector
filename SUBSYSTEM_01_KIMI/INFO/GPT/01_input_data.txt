@@ -1,0 +1,39 @@
+# [НАЗНАЧЕНИЕ]
+# Входные данные для GPT эксперта
+# Создан: 2026-02-22 14:30
+# Автор: KIMI_Architect_v1.0
+# Версия: 1.0.0
+# Статус: APPROVED
+
+## Описание
+Входные данные для GPT Code Generation эксперта.
+
+## Зависимости
+- INFO/GPT/00_SUPER_PROMPT_GPT.txt
+
+## История изменений
+- 2026-02-22 v1.0.0 - Первичная версия
+
+---
+
+# ДАННЫЕ ДЛЯ GPT ЭКСПЕРТА
+
+## Текущие задачи (P0)
+
+### 1. Riverpod Implementation
+- Заменить setState на Riverpod
+- Файлы: mobile_app/lib/features/ar_camera/*
+
+### 2. Navigation
+- Добавить go_router
+- Экраны: Camera → Results → Catalog
+
+### 3. PostgreSQL
+- Подключить БД к backend
+- Создать модели и миграции
+
+## Контакты
+- KIMI: Архитектура
+- Grok: Code Review
+- Gemini: ML/CV
+- Copilot: IDE

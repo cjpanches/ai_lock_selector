@@ -1,0 +1,39 @@
+# [НАЗНАЧЕНИЕ]
+# Входные данные для Copilot Productivity эксперта
+# Создан: 2026-02-22 14:30
+# Автор: KIMI_Architect_v1.0
+# Версия: 1.0.0
+# Статус: APPROVED
+
+## Описание
+Входные данные для Copilot Productivity эксперта.
+
+## Зависимости
+- INFO/Copilot/00_SUPER_PROMPT_COPILOT.txt
+
+## История изменений
+- 2026-02-22 v1.0.0 - Первичная версия
+
+---
+
+# ДАННЫЕ ДЛЯ COPILOT ЭКСПЕРТА
+
+## Текущие задачи
+
+### 1. VS Code Setup
+- Настроить .vscode/
+- Добавить снипеты
+
+### 2. Automation
+- Pre-commit hooks
+- Tasks настройка
+
+### 3. Productivity Tips
+- Keyboard shortcuts
+- Multi-cursor editing
+
+## Контакты
+- KIMI: Architecture
+- Grok: Code Review
+- GPT: Code Gen
+- Gemini: ML/CV
