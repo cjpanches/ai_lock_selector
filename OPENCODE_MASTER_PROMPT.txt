@@ -1,0 +1,135 @@
+================================================================================
+AI LOCK SELECTOR - MASTER PROMPT FOR NEW OPENCODE SESSION
+================================================================================
+VERSION: 3.0.0
+DATE: 2026-02-22
+PROJECT: AI Lock Selector
+REPO: https://github.com/cjpanches/ai_lock_selector
+BRANCH: develop
+================================================================================
+
+## STARTUP INSTRUCTIONS
+
+Copy this entire prompt into OpenCode to start a new development session.
+
+================================================================================
+## CURRENT PROJECT STATE
+
+### Architecture Scores (Independent Expert Analysis):
+- KIMI (Architecture): 6.8/10
+- GROK (Code Analysis): 7.2/10
+- GEMINI (ML/CV): 6.0/10
+- Overall: 6.8/10
+
+### Components Status:
+| Component | Score | Status |
+|-----------|-------|--------|
+| Mobile App | 7.0/10 | Ready |
+| Backend | 7.2/10 | Ready |
+| CV Pipeline | 6.0/10 | Needs YOLO |
+| Tests | 23/23 | PASS |
+
+### Key Files:
+- STARTUP.md - Main startup file
+- OPENCODE_STARTUP.md - OpenCode prompt
+- AI_EXPERTS/FACT/current_architecture_state.txt - Current state
+- AI_EXPERTS/IDEAL/target_architecture.txt - Target state
+
+================================================================================
+## PROJECT STRUCTURE
+
+/home/bot/porojects/ai_lock_project/
+├── mobile_app/          # Flutter app (Riverpod + GoRouter)
+├── backend/             # FastAPI server (SQLite, port 8000)
+├── cv_pipeline/src/     # Computer Vision (OpenCV)
+└── AI_EXPERTS/         # Expert system
+
+================================================================================
+## PRIORITY TASKS
+
+### P0 (Critical):
+1. Collect YOLO dataset (500+ photos of locks)
+2. Train YOLO model
+3. Integrate YOLO into lock_pipeline
+
+### P1 (High):
+4. PostgreSQL migration
+5. Flutter catalog screen
+6. Camera integration
+
+### P2 (Medium):
+7. Flutter widget tests
+8. Type hints
+9. Documentation
+
+================================================================================
+## FIRST TASK: TEST EXPERT SYSTEMS
+
+Start by verifying the expert system files are correct:
+1. Check AI_EXPERTS/EXPERTS/KIMI/master_prompt.md exists
+2. Check AI_EXPERTS/EXPERTS/GROK/master_prompt.md exists
+3. Check AI_EXPERTS/EXPERTS/GPT/master_prompt.md exists
+4. Check AI_EXPERTS/EXPERTS/GEMINI/master_prompt.md exists
+
+Then run backend tests to verify project is working:
+```bash
+cd /home/bot/porojects/ai_lock_project/backend && pytest
+```
+
+Expected result: 23 tests passed
+
+================================================================================
+## SECOND TASK: SELECT NEXT DEVELOPMENT PRIORITY
+
+Choose one:
+1. YOLO dataset collection (requires manual photo collection)
+2. PostgreSQL migration
+3. Flutter catalog implementation
+4. Camera integration
+
+================================================================================
+## TECHNICAL REQUIREMENTS
+
+### CV Accuracy:
+- Target: ±1.5mm
+- Current: ±3-5mm (without YOLO)
+
+### Backend:
+- PostgreSQL for production
+- API response < 200ms
+
+### Mobile:
+- AR FPS > 30
+- Test coverage > 70%
+
+================================================================================
+## COMMANDS
+
+# Backend
+cd /home/bot/porojects/ai_lock_project/backend && PYTHONPATH=. uvicorn app.main:app --reload
+
+# Flutter
+cd /home/bot/porojects/ai_lock_project/mobile_app && flutter run
+
+# Tests
+cd /home/bot/porojects/ai_lock_project/backend && pytest
+
+================================================================================
+## EXPERT FILES
+
+- KIMI: AI_EXPERTS/EXPERTS/KIMI/master_prompt.md
+- GROK: AI_EXPERTS/EXPERTS/GROK/master_prompt.md
+- GPT: AI_EXPERTS/EXPERTS/GPT/master_prompt.md
+- GEMINI: AI_EXPERTS/EXPERTS/GEMINI/master_prompt.md
+
+================================================================================
+## TECHNICAL STACK
+
+- Flutter 3.24+ + Riverpod + GoRouter
+- FastAPI + SQLAlchemy 2.0 + SQLite/PostgreSQL
+- OpenCV 4.x + YOLOv8
+- Pydantic v2
+
+================================================================================
+END OF MASTER PROMPT
+================================================================================
