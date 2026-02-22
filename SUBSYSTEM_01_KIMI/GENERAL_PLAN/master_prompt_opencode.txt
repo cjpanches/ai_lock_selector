@@ -1,0 +1,178 @@
+# [НАЗНАЧЕНИЕ]
+# Master Prompt для OpenCode - Следующие шаги разработки
+# Создан: 2026-02-22 13:40
+# Автор: KIMI_Architect_v1.0
+# Версия: 1.0.0
+# Статус: APPROVED
+
+## Описание
+Суперпромт для передачи контекста и задач в OpenCode на основе анализа эксперта KIMI.
+
+## Зависимости
+- INFO/KIMI/03_analysis_results.txt
+- FACT/current_state_analysis.txt
+- FACT/tech_debt_register.txt
+- FACT/risk_assessment.txt
+- IDEAL_PLAN/production_ready_spec.txt
+
+## История изменений
+- 2026-02-22 v1.0.0 - Первичная версия
+
+---
+
+# MASTER PROMPT FOR OPENCODE
+
+## КОНТЕКСТ ПРОЕКТА
+
+**Проект**: AI Lock Selector
+**Репозиторий**: https://github.com/cjpanches/ai_lock_selector
+**Ветка**: develop
+**Tech Stack**: Flutter + FastAPI + OpenCV + YOLO
+
+---
+
+## ТЕКУЩЕЕ СОСТОЯНИЕ
+
+Проект находится в стадии MVP (оценка 3.7/10):
+- Mobile App: 40% готовности (нужен Riverpod, навигация)
+- Backend: 30% готовности (нужна PostgreSQL)
+- CV Pipeline: 35% готовности (нужна YOLO модель)
+- Database: 0% (in-memory)
+
+**Git**: 7 коммитов, 5 релизов (v1-v5)
+
+---
+
+## ЗАДАЧА 1: Внедрить Riverpod (P0)
+
+### Описание
+Заменить plain setState на Riverpod для state management в Flutter приложении.
+
+### Текущий код
+```dart
+class _ARCameraScreenState extends State<ARCameraScreen> {
+  Offset _maskPosition = const Offset(0.5, 0.3);
+  double _maskScale = 1.0;
+  // ... plain setState everywhere
+}
+```
+
+### Требования
+1. Создать `mask_position_provider.dart` с StateNotifier
+2. Создать `camera_controller_provider.dart` с StateNotifier
+3. Обновить `ar_camera_screen.dart` использовать ConsumerWidget
+4. Добавить dependency: `flutter_riverpod: ^2.4.0`
+
+### Критерии приёмки
+- [ ] Нет прямого использования setState
+- [ ] Все state управляется через providers
+- [ ] Приложение запускается без ошибок
+
+---
+
+## ЗАДАЧА 2: Добавить навигацию (P0)
+
+### Описание
+Создать базовую навигацию с 3 экранами: AR Camera → Results → Catalog.
+
+### Структура
+```
+/                    → HomeScreen (переход к камере)
+/camera              → ARCameraScreen
+/results             → MeasurementResultScreen  
+/catalog             → LockCatalogScreen
+```
+
+### Требования
+1. Установить `go_router: ^14.0.0`
+2. Создать router.dart с настройкой маршрутов
+3. Создать простой LockCatalogScreen (статический список)
+4. Создать MeasurementResultScreen (показ результатов)
+
+### Критерии приёмки
+- [ ] Навигация работает между всеми 3 экранами
+- [ ] Нет ошибок при переходах
+
+---
+
+## ЗАДАЧА 3: Подключить PostgreSQL (P0)
+
+### Описание
+Заменить in-memory данные на PostgreSQL базу данных.
+
+### Структура БД
+```sql
+CREATE TABLE manufacturers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    country VARCHAR(100)
+);
+
+CREATE TABLE locks (
+    id SERIAL PRIMARY KEY,
+    manufacturer_id INTEGER REFERENCES manufacturers(id),
+    model VARCHAR(255),
+    backset FLOAT,
+    center_distance FLOAT,
+    plate_width FLOAT,
+    plate_height FLOAT,
+    mounting_holes_distance FLOAT
+);
+```
+
+### Требования
+1. Добавить `asyncpg` и `sqlalchemy` в requirements.txt
+2. Создать `backend/app/db/database.py` с подключением
+3. Создать `backend/app/db/models.py` с SQLAlchemy моделями
+4. Создать миграции в `backend/app/db/migrations/`
+
+### Критерии приёмки
+- [ ] Подключение к PostgreSQL работает
+- [ ] CRUD операции работают
+- [ ] API endpoints возвращают данные из БД
+
+---
+
+## ОГРАНИЧЕНИЯ
+
+1. **Не удалять существующий код** - только рефакторинг
+2. **Сохранять обратную совместимость** - не ломать текущий функционал
+3. **Использовать существующие константы**:
+   - DIN_CYLINDER_WIDTH = 10.0 mm
+   - DIN_CYLINDER_HEIGHT = 17.0 mm
+   - backset tolerance = ±2mm
+   - center distance tolerance = ±3mm
+
+---
+
+## РЕСУРСЫ
+
+### Файлы для изучения
+- `mobile_app/lib/main.dart` - точка входа
+- `mobile_app/lib/features/ar_camera/ar_camera_screen.dart` - главный экран
+- `backend/app/main.py` - FastAPI приложение
+
+### Документация
+- CONTRIBUTING.md
+- AGENTS.md
+
+---
+
+## ФОРМАТ ОТВЕТА
+
+После выполнения каждой задачи:
+1. Показать изменённые файлы
+2. Показать новые файлы
+3. Запушить в ветку develop
+4. Собрать APK и проверить
+5. Создать release
+
+---
+
+## ПРИОРИТЕТ ВЫПОЛНЕНИЯ
+
+1. Riverpod (1 неделя)
+2. Навигация (1 неделя)  
+3. PostgreSQL (2 недели)
+
+**Общая оценка**: 4 недели для P0 задач

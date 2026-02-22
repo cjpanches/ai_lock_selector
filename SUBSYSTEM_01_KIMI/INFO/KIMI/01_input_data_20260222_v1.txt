@@ -1,0 +1,58 @@
+# [НАЗНАЧЕНИЕ]
+# Входные данные для анализа проекта AI Lock Selector
+# Создан: 2026-02-22 13:00
+# Автор: KIMI_Architect_v1.0
+# Версия: 1.0.0
+# Статус: APPROVED
+
+## Описание
+Файл содержит входные данные для первичного анализа проекта AI Lock Selector экспертом KIMI.
+
+## Зависимости
+- Репозиторий: https://github.com/cjpanches/ai_lock_selector
+- Ветка: develop
+
+## История изменений
+- 2026-02-22 v1.0.0 - Первичная версия
+
+---
+
+# ДАННЫЕ ДЛЯ АНАЛИЗА
+
+## Информация о проекте
+- **Название**: AI Lock Selector
+- **Описание**: Мобильное приложение для измерения параметров дверных замков через AR и подбора аналогов
+- **Репозиторий**: https://github.com/cjpanches/ai_lock_selector
+- **Ветка**: develop
+- **Дата анализа**: 2026-02-22
+
+## Компоненты проекта
+1. **mobile_app/** - Flutter приложение
+2. **backend/** - FastAPI сервер
+3. **cv_pipeline/** - Computer Vision пайплайн
+4. **subsystem1/** - Система AI-экспертного анализа
+
+## Ключевые файлы для анализа
+- mobile_app/lib/main.dart
+- mobile_app/lib/features/ar_camera/ar_camera_screen.dart
+- cv_pipeline/src/lock_pipeline.py
+- cv_pipeline/src/contour_analyzer.py
+- backend/app/main.py
+- subsystem1/subsystem1.py
+
+## Предыдущие анализы (если есть)
+- Grok анализ: subsystem1/INFO/Grok/analysis_*.json
+- Анализ доступен в subsystem1/INFO/Analysis/
+
+## Области фокусировки
+- Архитектура приложения
+- State management
+- CV pipeline зрелость
+- Backend структура
+- Готовность к production
+
+## Версия Flutter
+- Требуется: Flutter 3.24+
+
+## Версия Python
+- Требуется: Python 3.10+
