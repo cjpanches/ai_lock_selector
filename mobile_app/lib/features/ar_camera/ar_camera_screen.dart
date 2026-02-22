@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -223,7 +224,7 @@ class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBin
       final bytes = await File(file.path).readAsBytes();
       
       final cvService = ref.read(cvServiceProvider);
-      final result = await cvService.detectLock(imageBase64: bytes.toString());
+      final result = await cvService.detectLock(imageBase64: base64Encode(bytes));
       
       if (result['success'] == true && result['detections'] != null) {
         final detections = result['detections'] as List;
@@ -233,8 +234,8 @@ class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBin
           if (bbox != null && bbox.length == 4) {
             final screenSize = MediaQuery.of(context).size;
             final imageSize = Size(
-              controller.value.previewSize!.height,
               controller.value.previewSize!.width,
+              controller.value.previewSize!.height,
             );
             
             maskNotifier.applyAutoDetection(

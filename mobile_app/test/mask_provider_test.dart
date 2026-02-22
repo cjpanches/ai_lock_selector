@@ -64,5 +64,46 @@ void main() {
       expect(state.isAligned, true);
       expect(state.alignmentScore, greaterThan(0.8));
     });
+
+    test('setAutoDetecting updates state', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(maskProvider.notifier).setAutoDetecting(true);
+
+      final state = container.read(maskProvider);
+      expect(state.isAutoDetecting, true);
+    });
+
+    test('applyAutoDetection sets position correctly', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(maskProvider.notifier).applyAutoDetection(
+        boundingBox: const Rect.fromLTWH(100, 100, 200, 150),
+        imageSize: const Size(1920, 1080),
+        screenSize: const Size(1080, 1920),
+      );
+
+      final state = container.read(maskProvider);
+      expect(state.position.dx, closeTo(0.2, 0.01));
+      expect(state.position.dy, closeTo(0.15, 0.01));
+      expect(state.isAutoDetecting, false);
+    });
+
+    test('applyAutoDetection calculates scale', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(maskProvider.notifier).applyAutoDetection(
+        boundingBox: const Rect.fromLTWH(100, 100, 200, 150),
+        imageSize: const Size(1920, 1080),
+        screenSize: const Size(1080, 1920),
+      );
+
+      final state = container.read(maskProvider);
+      expect(state.scale, greaterThan(0.5));
+      expect(state.scale, lessThanOrEqualTo(2.0));
+    });
   });
 }
