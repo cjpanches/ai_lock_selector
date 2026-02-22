@@ -1,0 +1,30 @@
+# EXPERT INPUT: KIMI (ARCHITECT)
+# Date: 2026-02-22
+# Version: 3.0.0
+
+## PROJECT STATE
+- Repository: https://github.com/cjpanches/ai_lock_selector
+- Branch: develop
+- Last commit: ce03e18 fix: Correct import path for providers
+- Overall Score: 7.2/10
+
+## CHANGES SINCE LAST ANALYSIS
+1. Added auto-alignment button to AR camera screen
+2. Enhanced mask_provider with auto-detection support
+3. Connected to CV backend for automatic lock detection
+
+## FILES TO ANALYZE
+- mobile_app/lib/features/ar_camera/ar_camera_screen.dart (NEW)
+- mobile_app/lib/providers/mask_provider.dart (UPDATED)
+- mobile_app/lib/core/router.dart
+- backend/app/main.py
+- backend/app/db/
+
+## FOCUS AREAS
+1. Architecture of the new auto-alignment feature
+2. Integration between mobile app and CV backend
+3. State management patterns (Riverpod)
+4. Risk assessment for new feature
+
+## OUTPUT REQUIRED
+Write analysis to: AI_EXPERTS/EXPERTS/KIMI/analysis_result_v3.md

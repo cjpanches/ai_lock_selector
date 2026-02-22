@@ -1,0 +1,31 @@
+# EXPERT INPUT: GEMINI (ML/CV)
+# Date: 2026-02-22
+# Version: 3.0.0
+
+## PROJECT STATE
+- Repository: https://github.com/cjpanches/ai_lock_selector
+- Branch: develop
+- Last commit: ce03e18 fix: Correct import path for providers
+- Overall Score: 7.2/10
+
+## CHANGES SINCE LAST ANALYSIS
+1. Added auto-alignment button to AR camera screen
+2. Enhanced mask_provider with auto-detection support
+3. Connected to CV backend for automatic lock detection
+4. Uses /cv/detect endpoint with fallback CV detection
+
+## FILES TO ANALYZE
+- cv_pipeline/src/yolo_detector.py
+- cv_pipeline/src/contour_analyzer.py
+- cv_pipeline/src/edge_detector.py
+- backend/app/cv_service.py
+- mobile_app/lib/providers/cv_provider.dart
+
+## FOCUS AREAS
+1. CV detection accuracy
+2. YOLO integration status
+3. Fallback detection mechanism
+4. Measurement precision
+
+## OUTPUT REQUIRED
+Write analysis to: AI_EXPERTS/EXPERTS/GEMINI/analysis_result_v3.md

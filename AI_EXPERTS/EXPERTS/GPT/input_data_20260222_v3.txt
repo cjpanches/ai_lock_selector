@@ -1,0 +1,28 @@
+# EXPERT INPUT: GPT (CODE GENERATION)
+# Date: 2026-02-22
+# Version: 3.0.0
+
+## PROJECT STATE
+- Repository: https://github.com/cjpanches/ai_lock_selector
+- Branch: develop
+- Last commit: ce03e18 fix: Correct import path for providers
+- Overall Score: 7.2/10
+
+## CHANGES SINCE LAST ANALYSIS
+1. Added auto-alignment button to AR camera screen
+2. Enhanced mask_provider with auto-detection support
+3. Connected to CV backend for automatic lock detection
+
+## FILES TO ANALYZE
+- mobile_app/lib/features/ar_camera/ar_camera_screen.dart (NEW)
+- mobile_app/lib/providers/mask_provider.dart (UPDATED)
+- All .dart and .py files
+
+## FOCUS AREAS
+1. Code conventions and patterns
+2. Clean code assessment
+3. Test coverage opportunities
+4. Code generation needs
+
+## OUTPUT REQUIRED
+Write analysis to: AI_EXPERTS/EXPERTS/GPT/analysis_result_v3.md
