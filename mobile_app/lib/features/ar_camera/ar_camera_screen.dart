@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -136,6 +137,9 @@ class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBin
   }
 
   Widget _buildTopBar(bool isAligned) {
+    final maskState = ref.watch(maskProvider);
+    final isDetecting = maskState.isAutoDetecting;
+    
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.all(16),
@@ -149,36 +153,119 @@ class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBin
               child: Icon(Icons.close, color: Colors.white, size: 28, key: ValueKey(isAligned)),
             ),
           ),
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isAligned ? Colors.green : Colors.orange,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: isAligned
-                  ? [BoxShadow(color: Colors.green.withOpacity(0.5), blurRadius: 10, spreadRadius: 2)]
-                  : null,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isAligned ? Icons.check_circle : Icons.info_outline,
-                  color: Colors.white,
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  isAligned ? 'Маска совмещена' : 'Совместите маску',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ],
+          GestureDetector(
+            onTap: isDetecting ? null : () => _runAutoDetect(),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: isAligned ? Colors.green : Colors.orange,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: isAligned
+                    ? [BoxShadow(color: Colors.green.withOpacity(0.5), blurRadius: 10, spreadRadius: 2)]
+                    : null,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  isDetecting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Icon(
+                          isAligned ? Icons.check_circle : Icons.info_outline,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isDetecting
+                        ? 'Детекция...'
+                        : (isAligned ? 'Маска совмещена' : 'Совместите маску'),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(width: 48),
+          IconButton(
+            onPressed: isDetecting ? null : () => _runAutoDetect(),
+            icon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                isDetecting ? Icons.hourglass_empty : Icons.auto_fix_high,
+                color: Colors.white,
+                size: 28,
+                key: ValueKey(isDetecting),
+              ),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _runAutoDetect() async {
+    final cameraState = ref.read(cameraControllerProvider);
+    if (!cameraState.hasValue || cameraState.value == null) return;
+    
+    final maskNotifier = ref.read(maskProvider.notifier);
+    maskNotifier.setAutoDetecting(true);
+    
+    try {
+      final controller = cameraState.value!;
+      final file = await controller.takePicture();
+      final bytes = await File(file.path).readAsBytes();
+      
+      final cvService = ref.read(cvServiceProvider);
+      final result = await cvService.detectLock(imageBase64: bytes.toString());
+      
+      if (result['success'] == true && result['detections'] != null) {
+        final detections = result['detections'] as List;
+        if (detections.isNotEmpty) {
+          final best = detections.first;
+          final bbox = best['bbox'] as List?;
+          if (bbox != null && bbox.length == 4) {
+            final screenSize = MediaQuery.of(context).size;
+            final imageSize = Size(
+              controller.value.previewSize!.height,
+              controller.value.previewSize!.width,
+            );
+            
+            maskNotifier.applyAutoDetection(
+              boundingBox: Rect.fromLTWH(
+                (bbox[0] as num).toDouble(),
+                (bbox[1] as num).toDouble(),
+                (bbox[2] as num).toDouble(),
+                (bbox[3] as num).toDouble(),
+              ),
+              imageSize: imageSize,
+              screenSize: screenSize,
+            );
+            return;
+          }
+        }
+      }
+      
+      maskNotifier.setAutoDetecting(false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Автоопределение не удалось. Переместите маску вручную.')),
+        );
+      }
+    } catch (e) {
+      maskNotifier.setAutoDetecting(false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка: $e')),
+        );
+      }
+    }
   }
 
   Widget _buildBottomControls(bool isAligned, double alignmentScore, bool isCapturing) {
