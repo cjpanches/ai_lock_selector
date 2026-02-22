@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:camera/camera.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/capture_context.dart';
@@ -12,7 +13,7 @@ final captureProvider = StateNotifierProvider<CaptureNotifier, CaptureState>((re
   return CaptureNotifier(ref);
 });
 
-class CaptureState {
+class CaptureState extends Equatable {
   final bool isCapturing;
   final CaptureContext? lastCapture;
   final String? error;
@@ -22,6 +23,9 @@ class CaptureState {
     this.lastCapture,
     this.error,
   });
+
+  @override
+  List<Object?> get props => [isCapturing, lastCapture, error];
 
   CaptureState copyWith({
     bool? isCapturing,

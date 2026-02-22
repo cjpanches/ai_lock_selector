@@ -1,7 +1,8 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MaskState {
+class MaskState extends Equatable {
   final Offset position;
   final double scale;
   final bool isAligned;
@@ -17,6 +18,9 @@ class MaskState {
     this.isAutoDetecting = false,
     this.detectedBounds,
   });
+
+  @override
+  List<Object?> get props => [position, scale, isAligned, alignmentScore, isAutoDetecting, detectedBounds];
 
   MaskState copyWith({
     Offset? position,
