@@ -1,0 +1,29 @@
+# Expert Configuration
+expert:
+  name: "GROK"
+  full_name: "GROK_CODE_ANALYZER"
+  version: "1.0.0"
+  role: "Code Analysis & CV"
+  description: "Анализ кода и компьютерного зрения"
+
+api:
+  provider: "x.ai"
+  env_var: "GROK_API_KEY"
+  model: "grok-2"
+
+capabilities:
+  - code_analysis
+  - cv_optimization
+  - bug_detection
+
+files:
+  input: "01_input_data.txt"
+  methodology: "02_methodology.txt"
+  results: "03_analysis_results.txt"
+
+constraints:
+  max_file_size: "50KB"
+  timeout_seconds: 60
+
+dependencies:
+  - kimi

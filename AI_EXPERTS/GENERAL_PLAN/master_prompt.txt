@@ -1,0 +1,19 @@
+# Master Prompt для OpenCode
+# Генерируется оркестратором экспертов
+
+## Следующая задача
+
+Используй AI_EXPERTS/ систему для координации:
+
+1. KIMI - определи архитектуру
+2. GPT - сгенерируй код
+3. GEMINI - проверь ML часть
+
+## Приоритеты
+1. Riverpod (P0)
+2. Navigation (P0)  
+3. PostgreSQL (P0)
+
+## Ссылки
+- AI_EXPERTS/ORCHESTRATOR/expert_orchestrator.py
+- AI_EXPERTS/EXPERTS/*/config.yaml

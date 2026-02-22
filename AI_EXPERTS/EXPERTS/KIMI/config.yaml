@@ -1,0 +1,26 @@
+# Expert Configuration
+expert:
+  name: "KIMI"
+  full_name: "KIMI_ARCHITECT"
+  version: "1.0.0"
+  role: "Architecture & Planning"
+  description: "Архитектура и стратегическое планирование"
+
+capabilities:
+  - architecture_design
+  - tech_planning
+  - risk_assessment
+
+files:
+  input: "01_input_data.txt"
+  methodology: "02_methodology.txt"
+  results: "03_analysis_results.txt"
+
+constraints:
+  max_file_size: "100KB"
+  timeout_seconds: 300
+
+dependencies:
+  - grok
+  - gpt
+  - gemini

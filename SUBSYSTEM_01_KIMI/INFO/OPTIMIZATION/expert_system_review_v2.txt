@@ -1,0 +1,172 @@
+# [НАЗНАЧЕНИЕ]
+# Ревью и оптимизация системы AI-экспертов
+# Создан: 2026-02-22 15:00
+# Автор: KIMI_Architect_v1.0
+# Версия: 2.0.0
+# Статус: APPROVED
+
+## Описание
+Ревью текущей системы экспертов и план оптимизации.
+
+## Зависимости
+- subsystem1/
+- SUBSYSTEM_01_KIMI/
+
+## История изменений
+- 2026-02-22 v2.0.0 - Оптимизированная версия
+
+---
+
+# РЕВЮ СИСТЕМЫ ЭКСПЕРТОВ
+
+## 1. АНАЛИЗ ТЕКУЩЕГО СОСТОЯНИЯ
+
+### 1.1 Проблемы
+
+| Проблема | Описание | Влияние |
+|----------|----------|---------|
+| Дублирование | subsystem1 + SUBSYSTEM_01_KIMI | Путаница |
+| Именование | `IDEAL PLAN` vs `IDEAL_PLAN` | Ошибки |
+| Пустая папка | INFO/GENERAL_PLAN пустая | Мусор |
+| Неполная структура | У разных экспертов разные файлы | Несогласованность |
+| Разные форматы | Grok - код, KIMI - текст | Нет унификации |
+
+### 1.2 Текущая структура
+
+```
+ai_lock_project/
+├── subsystem1/                      # Grok эксперт (Python)
+│   ├── subsystem1.py               # Код
+│   ├── INFO/Grok/                  # Анализ
+│   └── ...
+│
+└── SUBSYSTEM_01_KIMI/              # KIMI +GPT+Gemini+Copilot (Текст)
+    ├── INFO/KIMI/
+    ├── INFO/GPT/
+    ├── INFO/Gemini/
+    ├── INFO/Copilot/
+    └── ...
+```
+
+---
+
+## 2. ПРЕДЛАГАЕМАЯ ОПТИМИЗАЦИЯ
+
+### 2.1 Единая структура
+
+```
+AI_EXPERTS/
+├── ORCHESTRATOR/
+│   └── expert_system.py            # Главный оркестратор
+│
+├── EXPERTS/
+│   ├── GROK/
+│   │   ├── config.yaml             # Конфигурация
+│   │   ├── 01_input_data.txt      # Входные данные
+│   │   ├── 02_methodology.txt     # Методология
+│   │   └── 03_analysis_results.txt# Результаты
+│
+│   ├── KIMI/
+│   │   ├── config.yaml
+│   │   ├── 01_input_data.txt
+│   │   ├── 02_methodology.txt
+│   │   └── 03_analysis_results.txt
+│
+│   ├── GPT/
+│   │   ├── config.yaml
+│   │   ├── 00_super_prompt.txt   # Главный промт
+│   │   └── 01_input_data.txt
+│
+│   ├── GEMINI/
+│   │   ├── config.yaml
+│   │   ├── 00_super_prompt.txt
+│   │   └── 01_input_data.txt
+│
+│   └── COPILOT/
+│       ├── config.yaml
+│       ├── 00_super_prompt.txt
+│       └── 01_input_data.txt
+│
+├── CROSS_EXPERT/
+│   ├── collective_analysis.txt
+│   ├── meta_analysis.txt
+│   └── final_synthesis.txt
+│
+├── FACT/
+│   ├── current_state.txt
+│   ├── tech_debt.txt
+│   └── risk_assessment.txt
+│
+├── IDEAL_PLAN/
+│   ├── production_ready.txt
+│   └── architecture_target.txt
+│
+├── IDEA/
+│   └── idea_TEMPLATE.md
+│
+└── GENERAL_PLAN/
+    └── master_prompt.txt
+```
+
+### 2.2 Преимущества единой структуры
+
+- Унифицированное именование файлов
+- Единый формат для всех экспертов
+- Легкость добавления новых экспертов
+- Централизованное управление
+
+---
+
+## 3. ПЛАН МИГРАЦИИ
+
+### 3.1 Шаг 1: Удаление дубликатов
+- Удалить `INFO/GENERAL_PLAN`
+- Удалить пустые папки
+
+### 3.2 Шаг 2: Переименование
+- `IDEAL PLAN` → `IDEAL_PLAN`
+
+### 3.3 Шаг 3: Добавление config.yaml
+- Создать конфигурационные файлы для каждого эксперта
+
+### 3.4 Шаг 4: Создание ORCHESTRATOR
+- Главный файл координации экспертов
+
+---
+
+## 4. КОНФИГУРАЦИЯ ЭКСПЕРТА (config.yaml)
+
+```yaml
+expert:
+  name: "GPT_CODER"
+  version: "1.0.0"
+  role: "Code Generation"
+  api_key_env: "OPENAI_API_KEY"
+
+capabilities:
+  - code_generation
+  - refactoring
+  - code_review
+
+files:
+  input: "01_input_data.txt"
+  methodology: "02_methodology.txt"
+  results: "03_analysis_results.txt"
+
+constraints:
+  max_file_size: "100KB"
+  timeout_seconds: 300
+
+dependencies:
+  - grok
+  - kimi
+```
+
+---
+
+## 5. ИСПОЛНЕНИЕ (БУДЕТ СДЕЛАНО)
+
+- [ ] Удалить дублирующие директории
+- [ ] Переименовать в единый формат
+- [ ] Добавить config.yaml
+- [ ] Создать единую систему AI_EXPERTS/

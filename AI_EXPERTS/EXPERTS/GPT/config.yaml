@@ -1,0 +1,31 @@
+# Expert Configuration
+expert:
+  name: "GPT"
+  full_name: "GPT_CODER"
+  version: "1.0.0"
+  role: "Code Generation"
+  description: "Генерация и рефакторинг кода"
+
+api:
+  provider: "openai"
+  env_var: "OPENAI_API_KEY"
+  model: "gpt-4"
+
+capabilities:
+  - code_generation
+  - refactoring
+  - test_generation
+
+files:
+  input: "01_input_data.txt"
+  super_prompt: "00_super_prompt.txt"
+  methodology: "02_methodology.txt"
+  results: "03_analysis_results.txt"
+
+constraints:
+  max_file_size: "100KB"
+  timeout_seconds: 300
+  require_approval: true
+
+dependencies:
+  - kimi
