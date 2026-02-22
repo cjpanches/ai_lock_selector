@@ -1,0 +1,164 @@
+# СВОДНЫЙ ПЛАН РАЗРАБОТКИ AI LOCK SELECTOR
+# ==========================================
+# Создан: 2026-02-22
+# Эксперты: GROK, KIMI, GPT, GEMINI
+# Цель: Повысить оценку с 3.7/10 до 8+/10
+
+---
+
+## ТЕКУЩЕЕ СОСТОЯНИЕ
+
+| Компонент | Оценка | Проблемы |
+|-----------|--------|----------|
+| Mobile (Flutter) | 4.5/10 | Riverpod, Navigation |
+| Backend (FastAPI) | 3.5/10 | PostgreSQL, миграции |
+| CV Pipeline | 3.0/10 | STUB файлы |
+
+---
+
+## ПРИОРИТЕТЫ P0 (Критические)
+
+### 1. Riverpod 2.x
+- **Задачи:**
+  - Правильная структура провайдеров
+  - Устранение утечек памяти
+  - Scoped providers
+  - Auto-dispose
+- **Ответственный:** GPT
+- **Зависимость:** KIMI (архитектура)
+
+### 2. Навигация (go_router / auto_route)
+- **Задачи:**
+  - Типизированные маршруты
+  - Deep linking
+  - Transition анимации
+- **Ответственный:** GPT
+
+### 3. PostgreSQL + Alembic
+- **Задачи:**
+  - Миграции
+  - Правильные индексы
+  - Connection pool
+  - Транзакции
+- **Ответственный:** GROK
+
+---
+
+## ПРИОРИТЕТЫ P1 (Высокие)
+
+### 4. CV Pipeline - Ликвидация STUB
+- **Задачи:**
+  - `contour_analyzer.py` — алгоритмы выделения контуров
+  - `edge_detector.py` — адаптивный Canny + Bilateral Filtering
+  - `geometry_calculator.py` — расчёт尺寸 с учётом дисторсии
+- **Ответственный:** GEMINI
+- **Зависимость:** GROK (оптимизация кода)
+
+### 5. YOLOv8 Интеграция
+- **Задачи:**
+  - Multi-stage detection (YOLO + Gemini)
+  - ONNX/TensorRT экспорт
+  - Dataset спецификация
+- **Ответственный:** GEMINI
+
+### 6. Производительность Mobile
+- **Задачи:**
+  - AR + CV inference оптимизация
+  - Off-main-thread обработка
+  - Batch inference
+- **Ответственный:** GROK
+
+---
+
+## ПРИОРИТЕТЫ P2 (Средние)
+
+### 7. CI/CD + Тесты
+- **Задачи:**
+  - GitHub Actions
+  - Pre-commit hooks
+  - Flutter tests
+  - pytest для backend/CV
+- **Ответственный:** GROK (Automation)
+
+### 8. Тестирование
+- **Задачи:**
+  - Unit тесты
+  - Widget тесты
+  - Integration тесты
+  - CV метрики (IoU, RMSE)
+- **Ответственный:** GPT
+
+---
+
+## ПРИОРИТЕТЫ P3 (Низкие)
+
+### 9. Backend улучшения
+- Rate limiting
+- Caching
+- Structured logging
+- Error handling
+
+---
+
+## РАСПРЕДЕЛЕНИЕ ЗАДАЧ ПО ЭКСПЕРТАМ
+
+### GROK (Code Analysis + Automation)
+- PostgreSQL миграции
+- Профилирование и оптимизация
+- CI/CD скрипты
+- Pre-commit hooks
+
+### KIMI (Architecture + Planning)
+- Координация экспертов
+- Архитектурные решения
+- Техническое планирование
+- Risk assessment
+
+### GPT (Code Generation)
+- Riverpod рефакторинг
+- Навигация
+- Генерация тестов
+- Сниппеты
+
+### GEMINI (ML/CV)
+- CV Pipeline реализация
+- YOLOv8 интеграция
+- Dataset подготовка
+- ML оптимизация
+
+---
+
+## МЕТРИКИ УСПЕХА
+
+| Метрика | Текущее | Целевое |
+|---------|---------|---------|
+| Общая оценка | 3.7/10 | 8+/10 |
+| CV точность | ±2-3 мм | ±1.5 мм |
+| AR FPS | <30 | >30 |
+| API response | - | <200ms |
+| Покрытие тестами | 0% | >70% |
+
+---
+
+## СЛЕДУЮЩИЕ ШАГИ
+
+1. **Неделя 1-2:** Фундамент
+   - KIMI: Архитектура Riverpod
+   - GPT: Базовые провайдеры
+   - GROK: PostgreSQL схема
+
+2. **Неделя 3-4:** CV Pipeline
+   - GEMINI: contour_analyzer + edge_detector
+   - GROK: Оптимизация
+
+3. **Неделя 5-6:** Интеграция
+   - GEMINI: YOLOv8
+   - GPT: AR → CV мост
+
+4. **Неделя 7-8:** Стабилизация
+   - Все: Тесты
+   - GROK: CI/CD
+
+---
+
+**План активирован. Начинаем выполнение.**
