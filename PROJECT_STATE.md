@@ -32,11 +32,11 @@
 
 | Компонент | Оценка | Статус |
 |-----------|--------|--------|
-| Mobile App | 7.5/10 | ✅ Готов |
+| Mobile App | 7.8/10 | ✅ Готов |
 | Backend | 7.2/10 | ✅ Готов |
 | CV Pipeline | 6.0/10 | ⚠️ Нужен YOLO |
 | Auto-Alignment | 7.5/10 | ✅ Готов |
-| **Общая** | **7.3/10** | В разработке |
+| **Общая** | **7.5/10** | В разработке |
 
 ---
 
@@ -76,6 +76,11 @@
 - Исправлены размеры preview камеры: swap width/height
 - Проверен focal point delta: код корректный
 - Добавлены unit тесты для MaskNotifier
+
+### 6. P2 Refactoring (v3.0.4) ✅
+- Извлечён DINMaskPainter в отдельный файл
+- Добавлен Equatable в MaskState и CaptureState
+- Улучшена модульность и maintainability
 
 ---
 
