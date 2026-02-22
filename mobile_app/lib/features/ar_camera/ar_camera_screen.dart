@@ -1,129 +1,132 @@
-import 'dart:async';
-import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/capture_context.dart';
+import '../providers/providers.dart';
 
-class ARCameraScreen extends StatefulWidget {
+class ARCameraScreen extends ConsumerStatefulWidget {
   final Function(CaptureContext)? onCapture;
   final VoidCallback? onCancel;
 
   const ARCameraScreen({super.key, this.onCapture, this.onCancel});
 
   @override
-  State<ARCameraScreen> createState() => _ARCameraScreenState();
+  ConsumerState<ARCameraScreen> createState() => _ARCameraScreenState();
 }
 
-class _ARCameraScreenState extends State<ARCameraScreen> with WidgetsBindingObserver {
-  CameraController? _controller;
-  List<CameraDescription>? _cameras;
-  bool _isInitialized = false;
-  bool _isCapturing = false;
-  Offset _maskPosition = const Offset(0.5, 0.3);
-  double _maskScale = 1.0;
-  bool _isMaskAligned = false;
-  double _alignmentScore = 0.0;
+class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _glowAnimation;
+  bool _showSuccessAnimation = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _initializeCamera();
+    
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
+    _glowAnimation = Tween<double>(begin: 0.3, end: 0.6).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _controller?.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (_controller == null || !_controller!.value.isInitialized) return;
     if (state == AppLifecycleState.inactive) {
-      _controller?.dispose();
     } else if (state == AppLifecycleState.resumed) {
-      _initializeCamera();
-    }
-  }
-
-  Future<void> _initializeCamera() async {
-    try {
-      _cameras = await availableCameras();
-      if (_cameras == null || _cameras!.isEmpty) return;
-      _controller = CameraController(_cameras!.first, ResolutionPreset.high, enableAudio: false);
-      await _controller!.initialize();
-      if (mounted) setState(() => _isInitialized = true);
-    } catch (e) {
-      debugPrint('Camera init error: $e');
     }
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
-    setState(() {
-      _maskPosition = Offset(
-        (_maskPosition.dx + details.focalPointDelta.dx / MediaQuery.of(context).size.width).clamp(0.0, 1.0),
-        (_maskPosition.dy + details.focalPointDelta.dy / MediaQuery.of(context).size.height).clamp(0.0, 1.0),
-      );
-      _maskScale = (_maskScale * details.scale).clamp(0.5, 2.0);
-    });
-    _checkAlignment();
-  }
-
-  void _checkAlignment() {
-    final scaleDiff = (_maskScale - 1.0).abs();
-    _alignmentScore = scaleDiff < 0.2 ? 1.0 - scaleDiff : 0.0;
-    _isMaskAligned = _alignmentScore > 0.8;
+    final maskNotifier = ref.read(maskProvider.notifier);
+    final screenSize = MediaQuery.of(context).size;
+    final currentPosition = ref.read(maskProvider).position;
+    final newPosition = Offset(
+      currentPosition.dx * screenSize.width + details.focalPointDelta.dx,
+      currentPosition.dy * screenSize.height + details.focalPointDelta.dy,
+    );
+    maskNotifier.updatePosition(newPosition, screenSize);
+    maskNotifier.updateScale(details.scale);
   }
 
   Future<void> _captureFrame() async {
-    if (_controller == null || !_controller!.value.isInitialized || _isCapturing) return;
-    if (!_isMaskAligned) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Пожалуйста, совместите маску с отверстием цилиндра')),
-      );
-      return;
-    }
-    setState(() => _isCapturing = true);
-    try {
-      final XFile file = await _controller!.takePicture();
-      final Uint8List bytes = await File(file.path).readAsBytes();
-      final imageSize = Size(_controller!.value.previewSize!.height.toDouble(), _controller!.value.previewSize!.width.toDouble());
-      final scaleFactor = (150.0 * _maskScale) / 10.0;
-      final screenCenter = Offset(_maskPosition.dx * MediaQuery.of(context).size.width, _maskPosition.dy * MediaQuery.of(context).size.height);
-      final captureContext = CaptureContext(imageBytes: bytes, imageResolution: imageSize, scaleFactor: scaleFactor, markerCenter: screenCenter, timestamp: DateTime.now());
-      widget.onCapture?.call(captureContext);
-    } catch (e) {
-      debugPrint('Capture error: $e');
-    } finally {
-      setState(() => _isCapturing = false);
+    final captureContext = await ref.read(captureProvider.notifier).captureImage(context);
+    if (captureContext != null) {
+      setState(() => _showSuccessAnimation = true);
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) {
+        widget.onCapture?.call(captureContext);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final cameraState = ref.watch(cameraControllerProvider);
+    final maskState = ref.watch(maskProvider);
+    final captureState = ref.watch(captureProvider);
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          if (_isInitialized && _controller != null) CameraPreview(_controller!) else const Center(child: CircularProgressIndicator(color: Colors.white)),
+          cameraState.when(
+            data: (controller) => controller != null
+                ? CameraPreview(controller)
+                : const Center(child: Text('No camera', style: TextStyle(color: Colors.white))),
+            loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
+            error: (error, _) => Center(child: Text('Error: $error', style: const TextStyle(color: Colors.white))),
+          ),
           Positioned.fill(
             child: GestureDetector(
               onScaleUpdate: _onScaleUpdate,
               behavior: HitTestBehavior.opaque,
-              child: RepaintBoundary(
-                child: CustomPaint(painter: DINMaskPainter(position: _maskPosition, scale: _maskScale, alignmentScore: _alignmentScore, isAligned: _isMaskAligned)),
+              child: AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return CustomPaint(
+                    painter: DINMaskPainter(
+                      position: maskState.position,
+                      scale: maskState.scale,
+                      alignmentScore: maskState.alignmentScore,
+                      isAligned: maskState.isAligned,
+                      pulseValue: maskState.isAligned ? _pulseAnimation.value : 1.0,
+                      glowValue: _glowAnimation.value,
+                    ),
+                  );
+                },
               ),
             ),
           ),
+          if (_showSuccessAnimation)
+            Container(
+              color: Colors.green.withOpacity(0.3),
+              child: const Center(
+                child: Icon(Icons.check_circle, color: Colors.white, size: 100),
+              ),
+            ),
           SafeArea(
             child: Column(
               children: [
-                _buildTopBar(),
+                _buildTopBar(maskState.isAligned),
                 const Spacer(),
-                _buildBottomControls(),
+                _buildBottomControls(maskState.isAligned, maskState.alignmentScore, captureState.isCapturing),
               ],
             ),
           ),
@@ -132,17 +135,45 @@ class _ARCameraScreenState extends State<ARCameraScreen> with WidgetsBindingObse
     );
   }
 
-  Widget _buildTopBar() {
-    return Container(
+  Widget _buildTopBar(bool isAligned) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.all(16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(onPressed: widget.onCancel, icon: const Icon(Icons.close, color: Colors.white, size: 28)),
-          Container(
+          IconButton(
+            onPressed: widget.onCancel,
+            icon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Icon(Icons.close, color: Colors.white, size: 28, key: ValueKey(isAligned)),
+            ),
+          ),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(color: _isMaskAligned ? Colors.green : Colors.orange, borderRadius: BorderRadius.circular(20)),
-            child: Text(_isMaskAligned ? 'Маска совмещена' : 'Совместите маску', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            decoration: BoxDecoration(
+              color: isAligned ? Colors.green : Colors.orange,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: isAligned
+                  ? [BoxShadow(color: Colors.green.withOpacity(0.5), blurRadius: 10, spreadRadius: 2)]
+                  : null,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isAligned ? Icons.check_circle : Icons.info_outline,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  isAligned ? 'Маска совмещена' : 'Совместите маску',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
           ),
           const SizedBox(width: 48),
         ],
@@ -150,24 +181,85 @@ class _ARCameraScreenState extends State<ARCameraScreen> with WidgetsBindingObse
     );
   }
 
-  Widget _buildBottomControls() {
+  Widget _buildBottomControls(bool isAligned, double alignmentScore, bool isCapturing) {
     return Container(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          const Text('Перетащите маску на отверстие цилиндра', textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: 14)),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: Text(
+              isAligned
+                  ? 'Нажмите для захвата'
+                  : 'Перетащите маску на отверстие цилиндра',
+              key: ValueKey(isAligned),
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+          ),
           const SizedBox(height: 24),
           GestureDetector(
-            onTap: _captureFrame,
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 4), color: _isMaskAligned ? Colors.green : Colors.transparent),
-              child: _isCapturing ? const CircularProgressIndicator(color: Colors.white) : Icon(_isMaskAligned ? Icons.check : Icons.camera_alt, color: Colors.white, size: 36),
+            onTap: isAligned && !isCapturing ? _captureFrame : null,
+            child: AnimatedBuilder(
+              animation: _animationController,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: isCapturing ? 0.9 : (isAligned ? _pulseAnimation.value : 1.0),
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isAligned ? Colors.green : Colors.white,
+                        width: 4,
+                      ),
+                      color: isAligned ? Colors.green.withOpacity(_glowAnimation.value) : Colors.transparent,
+                      boxShadow: isAligned
+                          ? [
+                              BoxShadow(
+                                color: Colors.green.withOpacity(0.5),
+                                blurRadius: 20 * _glowAnimation.value,
+                                spreadRadius: 5 * _glowAnimation.value,
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: isCapturing
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Icon(
+                            isAligned ? Icons.check : Icons.camera_alt,
+                            color: Colors.white,
+                            size: 36,
+                          ),
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(height: 16),
-          Text('Точность: ${(_alignmentScore * 100).toInt()}%', style: TextStyle(color: _isMaskAligned ? Colors.green : Colors.orange, fontWeight: FontWeight.bold)),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: Row(
+              key: ValueKey(alignmentScore),
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  alignmentScore > 0.8 ? Icons.check_circle : Icons.warning,
+                  color: alignmentScore > 0.8 ? Colors.green : Colors.orange,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Точность: ${(alignmentScore * 100).toInt()}%',
+                  style: TextStyle(
+                    color: alignmentScore > 0.8 ? Colors.green : Colors.orange,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -179,24 +271,75 @@ class DINMaskPainter extends CustomPainter {
   final double scale;
   final double alignmentScore;
   final bool isAligned;
+  final double pulseValue;
+  final double glowValue;
 
-  DINMaskPainter({required this.position, required this.scale, required this.alignmentScore, required this.isAligned});
+  DINMaskPainter({
+    required this.position,
+    required this.scale,
+    required this.alignmentScore,
+    required this.isAligned,
+    this.pulseValue = 1.0,
+    this.glowValue = 0.5,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(position.dx * size.width, position.dy * size.height);
-    const maskWidth = 150.0;
-    const maskHeight = 100.0;
-    final paint = Paint()..color = isAligned ? Colors.green.withOpacity(0.5) : Colors.red.withOpacity(0.5)..style = PaintingStyle.fill;
-    final strokePaint = Paint()..color = isAligned ? Colors.green : Colors.red..style = PaintingStyle.stroke..strokeWidth = 3;
+    const baseMaskWidth = 150.0;
+    const baseMaskHeight = 100.0;
+    final maskWidth = baseMaskWidth * pulseValue;
+    final maskHeight = baseMaskHeight * pulseValue;
+
+    final fillColor = isAligned ? Colors.green : Colors.red;
+    final strokeColor = isAligned ? Colors.green : Colors.red;
+
+    final fillPaint = Paint()
+      ..color = fillColor.withOpacity(glowValue * 0.5)
+      ..style = PaintingStyle.fill;
+
+    final strokePaint = Paint()
+      ..color = strokeColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+
+    final glowPaint = Paint()
+      ..color = fillColor.withOpacity(glowValue * 0.3)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 8
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+
     canvas.save();
     canvas.translate(center.dx, center.dy);
     canvas.scale(scale);
+    canvas.scale(pulseValue);
+
     final rect = Rect.fromCenter(center: Offset.zero, width: maskWidth, height: maskHeight);
     final dinPath = _buildDINPath(rect);
-    canvas.drawPath(dinPath, paint);
+
+    canvas.drawPath(dinPath, glowPaint);
+    canvas.drawPath(dinPath, fillPaint);
     canvas.drawPath(dinPath, strokePaint);
+
+    _drawDINLabel(canvas, rect);
+
     canvas.restore();
+  }
+
+  void _drawDINLabel(Canvas canvas, Rect rect) {
+    final textPainter = TextPainter(
+      text: const TextSpan(
+        text: 'DIN',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(canvas, Offset(-textPainter.width / 2, rect.bottom + 5));
   }
 
   Path _buildDINPath(Rect rect) {
@@ -216,5 +359,10 @@ class DINMaskPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant DINMaskPainter oldDelegate) => position != oldDelegate.position || scale != oldDelegate.scale || isAligned != oldDelegate.isAligned;
+  bool shouldRepaint(covariant DINMaskPainter oldDelegate) =>
+      position != oldDelegate.position ||
+      scale != oldDelegate.scale ||
+      isAligned != oldDelegate.isAligned ||
+      pulseValue != oldDelegate.pulseValue ||
+      glowValue != oldDelegate.glowValue;
 }

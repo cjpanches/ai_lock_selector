@@ -1,0 +1,116 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+jobs:
+  flutter:
+    name: Flutter Tests & Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+      
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+      
+      - name: Install dependencies
+        run: cd mobile_app && flutter pub get
+      
+      - name: Run Flutter tests
+        run: cd mobile_app && flutter test
+      
+      - name: Analyze Flutter code
+        run: cd mobile_app && flutter analyze
+      
+      - name: Build APK
+        run: cd mobile_app && flutter build apk --debug
+        if: github.event_name == 'push'
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        if: github.event_name == 'push'
+        with:
+          name: app-debug.apk
+          path: mobile_app/build/app/outputs/flutter-apk/app-debug.apk
+
+  backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+      
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+      
+      - name: Run backend tests
+        run: cd backend && pytest -v
+      
+      - name: Run linters
+        run: |
+          pip install flake8
+          cd backend && flake8 app --count --select=E9,F63,F7,F82 --show-source --statistics
+
+  cv:
+    name: CV Pipeline Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install numpy opencv-python-headless pytest
+      
+      - name: Test CV pipeline
+        run: |
+          cd backend && pytest tests/test_cv.py -v
+
+  notify:
+    name: Notify
+    needs: [flutter, backend, cv]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Send failure notification
+        if: needs.flutter.result == 'failure' || needs.backend.result == 'failure' || needs.cv.result == 'failure'
+        run: |
+          echo "Some jobs failed. Check the workflow logs."

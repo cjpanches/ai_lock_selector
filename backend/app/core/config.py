@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     app_name: str = "AI Lock Selector"
     debug: bool = True
     
-    database_url: str = "postgresql+asyncpg://user:password@localhost:5432/locks"
+    database_url: str = "sqlite+aiosqlite:///./locks.db"
     
     cors_origins: list = ["*"]
     

@@ -1,5 +1,7 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from app.db.models import Lock
 from app.models.schemas import LockProfileDTO, LockModelDTO, LockMatchDTO, MatchResultDTO
-from app.db.database import get_locks
 
 TOLERANCES = {
     "backset": 2.0,
@@ -19,17 +21,19 @@ WEIGHTS = {
     "body_height": 0.05,
 }
 
+
 class MatchingService:
     def __init__(self):
         self.tolerance_map = TOLERANCES
         self.weights = WEIGHTS
     
-    async def find_matches(self, profile: LockProfileDTO) -> list[LockMatchDTO]:
+    async def find_matches(self, profile: LockProfileDTO, db: AsyncSession) -> list[LockMatchDTO]:
         """Поиск аналогов замка по измеренным параметрам"""
         
-        locks = await self.get_locks_from_db()
-        matches = []
+        result = await db.execute(select(Lock).limit(100))
+        locks = result.scalars().all()
         
+        matches = []
         dims = profile.dimensions
         
         for lock in locks:
@@ -37,8 +41,9 @@ class MatchingService:
             
             if score > 0.3:
                 matched_params = self._get_matched_params(dims, lock)
+                lock_dto = self._lock_to_dto(lock)
                 matches.append(LockMatchDTO(
-                    lock=lock,
+                    lock=lock_dto,
                     score=score,
                     matched_params=matched_params,
                 ))
@@ -52,34 +57,22 @@ class MatchingService:
         score = 0
         total_weight = 0
         
-        score += self._calculate_param_score(
-            dims.backset, lock.backset, "backset"
-        )
+        score += self._calculate_param_score(dims.backset, lock.backset, "backset")
         total_weight += self.weights["backset"]
         
-        score += self._calculate_param_score(
-            dims.center_distance, lock.center_distance, "center_distance"
-        )
+        score += self._calculate_param_score(dims.center_distance, lock.center_distance, "center_distance")
         total_weight += self.weights["center_distance"]
         
-        score += self._calculate_param_score(
-            dims.plate_width, lock.plate_width, "plate_width"
-        )
+        score += self._calculate_param_score(dims.plate_width, lock.plate_width, "plate_width")
         total_weight += self.weights["plate_width"]
         
-        score += self._calculate_param_score(
-            dims.plate_height, lock.plate_height, "plate_height"
-        )
+        score += self._calculate_param_score(dims.plate_height, lock.plate_height, "plate_height")
         total_weight += self.weights["plate_height"]
         
-        score += self._calculate_param_score(
-            dims.body_width, lock.body_width, "body_width", tolerance=5.0
-        )
+        score += self._calculate_param_score(dims.body_width, lock.body_width, "body_width", tolerance=5.0)
         total_weight += self.weights["body_width"]
         
-        score += self._calculate_param_score(
-            dims.body_height, lock.body_height, "body_height", tolerance=5.0
-        )
+        score += self._calculate_param_score(dims.body_height, lock.body_height, "body_height", tolerance=5.0)
         total_weight += self.weights["body_height"]
         
         return score / total_weight if total_weight > 0 else 0
@@ -89,7 +82,7 @@ class MatchingService:
         tol = tolerance or self.tolerance_map.get(param, 2.0)
         weight = self.weights.get(param, 0.1)
         
-        if profile_value == 0 or lock_value == 0:
+        if profile_value == 0 or lock_value is None or lock_value == 0:
             return 0
         
         diff = abs(profile_value - lock_value)
@@ -124,14 +117,27 @@ class MatchingService:
             ),
         }
     
-    async def get_locks_from_db(self, type=None, brand=None, limit=100, offset=0) -> list[LockModelDTO]:
-        """Получение списка замков из БД"""
-        return await get_locks(type, brand, limit, offset)
-    
-    async def get_lock_by_id(self, lock_id: int) -> LockModelDTO:
-        """Получение замка по ID"""
-        locks = await get_locks(limit=1000)
-        for lock in locks:
-            if lock.id == lock_id:
-                return lock
-        return None
+    def _lock_to_dto(self, lock: Lock) -> LockModelDTO:
+        return LockModelDTO(
+            id=lock.id,
+            vendor_code=lock.vendor_code,
+            name=lock.name,
+            brand=lock.brand,
+            type=lock.type.value,
+            backset=lock.backset,
+            center_distance=lock.center_distance,
+            plate_width=lock.plate_width,
+            plate_height=lock.plate_height,
+            plate_thickness=lock.plate_thickness,
+            body_width=lock.body_width,
+            body_height=lock.body_height,
+            body_depth=lock.body_depth,
+            cylinder_hole_diameter=lock.cylinder_hole_diameter,
+            square_hole_size=lock.square_hole_size,
+            image_url=lock.image_url,
+            drawing_url=lock.drawing_url,
+            description=lock.description,
+        )
+
+
+matching_service = MatchingService()
