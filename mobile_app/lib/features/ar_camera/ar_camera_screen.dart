@@ -3,7 +3,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/capture_context.dart';
-import '../providers/providers.dart';
+import '../../providers/providers.dart';
 
 class ARCameraScreen extends ConsumerStatefulWidget {
   final Function(CaptureContext)? onCapture;
