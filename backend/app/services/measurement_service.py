@@ -31,7 +31,13 @@ class MeasurementService:
             
             contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             
-            dimensions = await self._calculate_dimensions(contours, scale_factor)
+            dimensions = await self._calculate_dimensions(
+                contours, 
+                scale_factor,
+                cylinder_hole=cylinder_hole,
+                handle_square=handle_square,
+                mounting_holes=mounting_holes
+            )
             mounting_holes = await self._find_mounting_holes(contours, scale_factor)
             handle_square = await self._find_handle_square(contours, scale_factor)
             cylinder_hole = await self._find_cylinder_hole(contours, scale_factor, marker_x, marker_y)
@@ -50,7 +56,7 @@ class MeasurementService:
         except Exception as e:
             raise Exception(f"Measurement failed: {str(e)}")
     
-    async def _calculate_dimensions(self, contours, scale_factor):
+    async def _calculate_dimensions(self, contours, scale_factor, cylinder_hole=None, handle_square=None, mounting_holes=None):
         """Вычисление размеров замка"""
         
         plate_contour = self._find_plate_contour(contours)
@@ -72,9 +78,26 @@ class MeasurementService:
         plate_width = (w / scale_factor)
         plate_height = (h / scale_factor)
         
+        backset = 0.0
+        center_distance = 0.0
+        
+        if cylinder_hole and handle_square:
+            dx = handle_square.get('x', 0) - cylinder_hole.get('x', 0)
+            dy = handle_square.get('y', 0) - cylinder_hole.get('y', 0)
+            backset = (dx**2 + dy**2) ** 0.5
+        
+        if mounting_holes and len(mounting_holes) >= 2:
+            sorted_holes = sorted(mounting_holes, key=lambda h: h.get('y', 0))
+            h1, h2 = sorted_holes[0], sorted_holes[1]
+            dx = h2.get('x', 0) - h1.get('x', 0)
+            dy = h2.get('y', 0) - h1.get('y', 0)
+            center_distance = (dx**2 + dy**2) ** 0.5
+        elif cylinder_hole and handle_square:
+            center_distance = backset
+        
         return {
-            "backset": 55.0,
-            "center_distance": 72.0,
+            "backset": backset if backset > 0 else 55.0,
+            "center_distance": center_distance if center_distance > 0 else 72.0,
             "plate_width": plate_width,
             "plate_height": plate_height,
             "plate_thickness": 3.0,
