@@ -1,12 +1,12 @@
 # ================================================================================
 # AI LOCK SELECTOR - STARTUP FILE
 # ================================================================================
-# Версия: 3.0.4
-# Дата: 2026-02-22
+# Версия: 4.0.0
+# Дата: 2026-02-23
 # Проект: AI Lock Selector
 # Репозиторий: https://github.com/cjpanches/ai_lock_selector
 # Ветка: develop
-# Оценка: 7.5/10
+# Оценка: 5.2/10 (требуются критические исправления)
 # ================================================================================
 
 # ================================================================================
@@ -28,33 +28,38 @@
 - cv_pipeline/src/ - Computer Vision (OpenCV + YOLO)
 - AI_EXPERTS/ - Экспертная система
 
-## ТЕКУЩЕЕ СОСТОЯНИЕ (v3.0.4):
+## ТЕКУЩЕЕ СОСТОЯНИЕ (v4.0.0):
 | Компонент | Оценка | Статус |
 |-----------|--------|--------|
-| Mobile App | 7.8/10 | ✅ Готов |
-| Backend | 7.2/10 | ✅ Готов |
-| CV Pipeline | 6.0/10 | ⚠️ Нужен YOLO |
-| Auto-Alignment | 7.5/10 | ✅ Готов |
-| Тесты | 23/23 | ✅ Проходят |
-| **Общая** | **7.5/10** | ✅ |
+| Mobile App | 6.1/10 | ⚠️ Router import missing |
+| Backend | 5.4/10 | 🔴 API matching crash |
+| CV Pipeline | 5.4/10 | 🔴 GeometryCalculator broken |
+| Tests | 3/10 | ❌ Минимальное покрытие |
+| **Общая** | **5.2/10** | 🔴 НЕ РАБОТАЕТ |
+
+## КРИТИЧЕСКИЕ БАГИ (P0):
+1. 🔴 API matching crash - missing `db` parameter
+2. 🔴 Router import missing - HomeScreen not imported  
+3. 🔴 Division by zero - scale_factor validation missing
+4. 🔴 GeometryCalculator broken - stub values
 
 ## ВЫПОЛНЕННЫЕ ЗАДАЧИ:
 1. ✅ PostgreSQL миграция
 2. ✅ Flutter Catalog Screen
 3. ✅ YOLO интеграция (структура)
-4. ✅ Auto-alignment с CV
-5. ✅ P0 баги исправлены
-6. ✅ P1: retry + confidence
-7. ✅ P2: SRP refactoring + Equatable
+4. ✅ База данных замков (147 шт)
+5. ✅ P0 баги исправлены (v3.x)
+6. ✅ DIN маска исправлена
 
 ## ПРИОРИТЕТЫ:
-1. P3: Собрать Dataset (500+ фото) + Обучить YOLO
-2. P3: PostgreSQL в production
-3. P4: Документация
+1. P0: Исправить критические баги (чтобы работало)
+2. P1: Добавить тесты, исправить CORS
+3. P2: Обучить YOLO, рефакторинг
 
 ## ГЛАВНЫЕ РИСКИ:
-- Нет YOLO модели (требует ручной сбор фото)
-- SQLite не для production
+- API падает (matching endpoints)
+- CV возвращает неверные данные (stub)
+- Нет YOLO модели
 
 ## КОМАНДЫ ЗАПУСКА:
 Backend: cd /home/bot/porojects/ai_lock_project/backend && PYTHONPATH=. uvicorn app.main:app --reload
@@ -63,14 +68,18 @@ APK: cd /home/bot/porojects/ai_lock_project/mobile_app && flutter build apk --de
 Тесты: cd /home/bot/porojects/ai_lock_project/backend && pytest
 
 ## AI ЭКСПЕРТЫ - ФАЙЛЫ:
-KIMI: AI_EXPERTS/EXPERTS/KIMI/analysis_result_v3.md
-GROK: AI_EXPERTS/EXPERTS/GROK/analysis_result_v3.md
-GPT: AI_EXPERTS/EXPERTS/GPT/analysis_result_v3.md
-GEMINI: AI_EXPERTS/EXPERTS/GEMINI/analysis_result_v3.md
+KIMI: AI_EXPERTS/EXPERTS/KIMI/output.md
+GROK: AI_EXPERTS/EXPERTS/GROK/output.md
+GPT: AI_EXPERTS/EXPERTS/GPT/output.md
+GEMINI: AI_EXPERTS/EXPERTS/GEMINI/output.md
 MASTER: AI_EXPERTS/MASTER_ANALYSIS_v3.md
 
 ## СЛЕДУЮЩАЯ ЗАДАЧА:
-YOLO Dataset collection (ручная работа - 500+ фото замков)
+Исправить критические баги P0:
+1. API matching (db parameter)
+2. Router import (HomeScreen)
+3. Division by zero (scale_factor)
+4. GeometryCalculator (stub values)
 """
 
 # ================================================================================
@@ -81,15 +90,14 @@ YOLO Dataset collection (ручная работа - 500+ фото замков)
 - Flutter app с Riverpod + GoRouter
 - FastAPI backend с SQLite
 - CV модули (contour, edge, geometry)
-- Auto-alignment feature
-- 23 unit теста проходят
-- SRP refactoring выполнен
-- Equatable добавлен
+- Auto-alignment feature (ручное подтверждение)
+- 23 unit теста проходят (но есть баги в API)
 
-## Требуется доработка:
-- YOLO модель (нет обученной)
-- Датасет 500+ фото
-- PostgreSQL для production
+## Требуется срочно:
+- Исправить API matching (падает)
+- Исправить Router import (не запускается)
+- Исправить GeometryCalculator (неверные данные)
+- Обучить YOLO модель
 
 # ================================================================================
 # 📁 РАСПОЛОЖЕНИЕ КЛЮЧЕВЫХ ФАЙЛОВ
@@ -122,12 +130,9 @@ YOLO Dataset collection (ручная работа - 500+ фото замков)
 | Версия | Дата | Описание |
 |--------|------|----------|
 | 1.0.0 | 2026-02-22 | STARTUP создан |
-| 2.0.0 | 2026-02-22 | Первая версия |
-| 2.1.0 | 2026-02-22 | После экспертизы v1 |
-| 3.0.0 | 2026-02-22 | Независимая экспертиза |
-| 3.0.2 | 2026-02-22 | P0 баги исправлены |
-| 3.0.3 | 2026-02-22 | P1 улучшения |
 | 3.0.4 | 2026-02-22 | P2 refactoring |
+| 3.1.0 | 2026-02-22 | DIN mask fix |
+| 4.0.0 | 2026-02-23 | Экспертиза v4 - критические баги |
 """
 
 # ================================================================================
