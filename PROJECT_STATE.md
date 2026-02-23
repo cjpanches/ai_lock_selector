@@ -1,8 +1,8 @@
 # AI LOCK SELECTOR - ТЕКУЩЕЕ СОСТОЯНИЕ ПРОЕКТА
 # ==============================================
-# Дата: 2026-02-22
-# Версия: 3.0.2
-# Статус: P0 баги исправлены
+# Дата: 2026-02-23
+# Версия: 3.1.0
+# Статус: DIN маска исправлена
 
 ---
 
@@ -35,7 +35,7 @@
 | Mobile App | 7.8/10 | ✅ Готов |
 | Backend | 7.2/10 | ✅ Готов |
 | CV Pipeline | 6.0/10 | ⚠️ Нужен YOLO |
-| Auto-Alignment | 7.5/10 | ✅ Готов |
+| Manual Alignment | 8.0/10 | ✅ Готов (пользователь подтверждает) |
 | **Общая** | **7.5/10** | В разработке |
 
 ---
@@ -82,6 +82,16 @@
 - Добавлен Equatable в MaskState и CaptureState
 - Улучшена модульность и maintainability
 
+### 7. DIN Mask Fix (v3.1.0) ✅
+- Маска перерисована точно по чертежу `euro_profile_exact.svg`
+- Использованы точные координаты:
+  - Общая высота: 33mm
+  - Верхний полукруг: диаметр 17mm (радиус 8.5mm)
+  - Щель шириной: 10mm (x: 11.5 - 21.5mm)
+  - Нижний полукруг: радиус 5mm
+- Размер маски: 60×120px (соответствует 17×33mm)
+- Упрощён UI - ручное подтверждение совмещения пользователем
+
 ---
 
 ## ТЕХНОЛОГИЧЕСКИЙ СТЕК
@@ -116,6 +126,8 @@ ai_lock_selector/
 │   └── src/               # CV модули
 ├── datafordb/              # Данные для БД
 │   └── locks_final.csv     # 181 замок
+├── mask/                   # Чертежи и маски
+│   └── euro_profile_exact.svg  # Эталонная маска DIN
 ├── AI_EXPERTS/             # AI экспертная система
 └── docker-compose.yml       # PostgreSQL
 ```
@@ -130,31 +142,36 @@ Backend: 23/23 ✅
 
 ---
 
-## СЛЕДУЮЩИЕ ШАГИ (по KIMI)
-
-### P0 (Critical):
-1. ~~PostgreSQL миграция~~ ✅
-2. ~~База данных замков~~ ✅
-3. YOLO dataset collection (500+ фото) - требует ручного сбора
-4. YOLO training
+## СЛЕДУЮЩИЕ ШАГИ
 
 ### P1 (High):
-5. Flutter catalog screen ✅
-6. Camera integration (AR камера)
+1. ~~PostgreSQL миграция~~ ✅
+2. ~~База данных замков~~ ✅
+3. ~~Flutter catalog screen~~ ✅
+4. ~~Camera integration (AR камера)~~ ✅
+5. ~~DIN маска исправлена (ручное совмещение)~~ ✅
 
 ### P2 (Medium):
-7. Flutter widget tests
-8. Type hints
+6. YOLO dataset collection (500+ фото) - требует ручного сбора
+7. YOLO training
+8. Flutter widget tests
 9. Documentation
 
 ---
 
 ## КЛЮЧЕВЫЕ КОНСТАНТЫ
 
-### DIN Стандарт
-- DIN_CYLINDER_WIDTH = 10.0 mm
-- DIN_CYLINDER_HEIGHT = 17.0 mm
-- **EURO_CYLINDER_HOLE = 33x17 mm** (используется как маска)
+### DIN Стандарт (евроцилиндр)
+- **EURO_CYLINDER_HOLE = 33×17 mm** (используется как маска)
+- Верхний полукруг: диаметр 17mm, радиус 8.5mm
+- Щель: ширина 10mm (x: 11.5 - 21.5mm)
+- Нижний полукруг: радиус 5mm
+- Общая высота: 33mm
+- Точка пересечения: y = 15.37386mm
+
+### Файл маски
+- `mask/euro_profile_exact.svg` - эталонный чертёж
+- Координаты в mm точно соответствуют размерам
 
 ### Допуски (Fuzzy Matching)
 - BACKSET_TOLERANCE = ±2.0 mm
@@ -191,7 +208,8 @@ flutter run
 - **Этот файл:** `PROJECT_STATE.md`
 - **Стартовый промт:** `OPENCODE_STARTUP.md`
 - **Мастер промт:** `OPENCODE_MASTER_PROMPT.txt`
+- **Чертёж маски:** `mask/euro_profile_exact.svg`
 
 ---
 
-**Обновлено: 2026-02-22**
+**Обновлено: 2026-02-23**

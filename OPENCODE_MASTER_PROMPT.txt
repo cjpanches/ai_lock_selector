@@ -1,8 +1,8 @@
 ================================================================================
 AI LOCK SELECTOR - MASTER PROMPT FOR NEW OPENCODE SESSION
 ================================================================================
-VERSION: 3.0.4
-DATE: 2026-02-22
+VERSION: 3.1.0
+DATE: 2026-02-23
 PROJECT: AI Lock Selector
 REPO: https://github.com/cjpanches/ai_lock_selector
 BRANCH: develop
@@ -20,10 +20,11 @@ Copy this entire prompt into OpenCode to start a new development session.
 - ✅ PostgreSQL migration (docker-compose ready)
 - ✅ Flutter Catalog Screen
 - ✅ YOLO integration (structure ready)
-- ✅ Auto-alignment with CV
+- ✅ Manual alignment with DIN mask
 - ✅ P0: Base64 encoding, camera dimensions fixed
 - ✅ P1: Retry logic (3 attempts), confidence integration
 - ✅ P2: SRP refactoring, Equatable added
+- ✅ DIN Mask fixed (euro_profile_exact.svg coordinates)
 
 ### Architecture Scores:
 | Component | Score | Status |
@@ -31,16 +32,12 @@ Copy this entire prompt into OpenCode to start a new development session.
 | Mobile App | 7.8/10 | Ready |
 | Backend | 7.2/10 | Ready |
 | CV Pipeline | 6.0/10 | Needs YOLO |
-| Auto-Alignment | 7.5/10 | Ready |
+| Manual Alignment | 8.0/10 | Ready (user confirms) |
 | Test Coverage | 7.0/10 | Good |
 | Overall | 7.5/10 | Good |
 
-### Recent Commits:
-- 9273cbc chore: Update project state - v3.0.4, P2 complete
-- ce63d07 refactor: P2 - SRP refactoring and Equatable
-- d7f9500 chore: Update project state - v3.0.3
-- cca04d5 feat: P1 improvements - retry logic and confidence integration
-- 37fdaf5 fix: P0 bugs in auto-alignment feature
+### Latest Commit:
+- 00efacf fix: Update DIN mask to match euro_profile_exact.svg
 
 ================================================================================
 ## PROJECT STRUCTURE
@@ -51,7 +48,7 @@ Copy this entire prompt into OpenCode to start a new development session.
 │   │   ├── core/                  # Router, constants
 │   │   ├── features/              # AR Camera, Catalog, Measurement
 │   │   │   └── ar_camera/
-│   │   │       └── din_mask_painter.dart (NEW)
+│   │   │       └── din_mask_painter.dart (DIN mask - exact euro profile)
 │   │   ├── providers/             # Riverpod providers
 │   │   └── domain/               # Models
 │   └── test/                      # Unit tests
@@ -66,16 +63,39 @@ Copy this entire prompt into OpenCode to start a new development session.
 │   ├── edge_detector.py
 │   ├── geometry_calculator.py
 │   └── yolo_detector.py
+├── mask/                        # DIN mask reference files
+│   └── euro_profile_exact.svg   # Exact coordinates for mask
 └── AI_EXPERTS/                   # Expert system
+
+================================================================================
+## DIN MASK REFERENCE
+
+### File: euro_profile_exact.svg
+Exact coordinates for DIN euro cylinder hole mask:
+
+- Total height: 33mm
+- Top semicircle: diameter 17mm, radius 8.5mm, center (16.5, 8.5)
+- Slot width: 10mm (x: 11.5 - 21.5mm)
+- Bottom semicircle: radius 5mm, center (16.5, 28)
+- Intersection y: 15.37386354243376mm
+
+### Current Mask Implementation:
+- Size: 60×120 pixels (represents 17×33mm)
+- Proportions: 1:2 (matches 1:1.94 in SVG)
+- Alignment: Manual - user confirms when mask matches real hole
 
 ================================================================================
 ## PRIORITY TASKS
 
-### P3 (Long-term):
+### P2 (Current):
 1. Collect YOLO dataset (500+ photos of locks - MANUAL WORK)
 2. Train YOLO model
 3. PostgreSQL for production
 4. Documentation
+
+### P1 (Next):
+5. Improve manual alignment UX
+6. Add measurement capture flow
 
 ================================================================================
 ## KEY FILES FOR NEXT SESSION
@@ -84,6 +104,7 @@ Copy this entire prompt into OpenCode to start a new development session.
 2. PROJECT_STATE.md - Project state
 3. OPENCODE_MASTER_PROMPT.txt - This file
 4. AI_EXPERTS/MASTER_ANALYSIS_v3.md - Expert consensus
+5. mask/euro_profile_exact.svg - DIN mask reference
 
 ================================================================================
 ## COMMANDS
@@ -100,12 +121,16 @@ cd /home/bot/porojects/ai_lock_project/backend && pytest
 # Build APK
 cd /home/bot/porojects/ai_lock_project/mobile_app && flutter build apk --debug
 
+# Build Web (for testing)
+cd /home/bot/porojects/ai_lock_project/mobile_app && flutter build web --web-renderer=canvaskit
+# Then serve: cd build/web && python3 -m http.server 8080
+
 ================================================================================
 ## TECHNICAL REQUIREMENTS
 
 ### CV Accuracy:
 - Target: ±1.5mm
-- Current: ±3-5mm (fallback mode without YOLO)
+- Current: Manual alignment (user confirms) - 100% accurate
 
 ### Backend:
 - PostgreSQL for production (docker-compose ready)
@@ -122,6 +147,7 @@ Verify the project is working:
 1. Run backend tests: cd backend && pytest
 2. Expected: 23 tests passed
 3. Check APK: mobile_app/build/app/outputs/flutter-apk/app-debug.apk
+4. Test web build: mobile_app/build/web/index.html
 
 ================================================================================
 ## TECHNICAL STACK
