@@ -120,6 +120,9 @@ class LockContourPipeline:
         contour: np.ndarray,
         expected_diameter_mm: Tuple[float, float]
     ) -> bool:
+        if self.scale_factor <= 0:
+            return False
+        
         area = cv2.contourArea(contour)
         perimeter = cv2.arcLength(contour, True)
         
@@ -143,6 +146,9 @@ class LockContourPipeline:
         expected_size_mm: Tuple[float, float],
         tolerance: float = 0.5
     ) -> bool:
+        if self.scale_factor <= 0:
+            return False
+        
         x, y, w, h = cv2.boundingRect(contour)
         
         width_mm = w / self.scale_factor

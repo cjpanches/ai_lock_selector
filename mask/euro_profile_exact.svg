@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Euro profile cylinder hole — engineering mask for ML (DIN style)
+     Document units: millimeters (mm)
+     Total height: 33 mm
+     Top circle: diameter 17 mm (r 8.5 mm), center (16.5, 8.5)
+     Vertical slot: width 10 mm, left x=11.5 mm, right x=21.5 mm
+     Bottom semicircle: radius 5 mm, center (16.5, 28)
+     Intersection between top circle and slot at y = 15.37386354243376 mm
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="33mm" height="33mm" viewBox="0 0 33 33" version="1.1">
+  <metadata>
+    {
+      "name": "euro_profile_exact",
+      "units": "mm",
+      "total_height_mm": 33,
+      "top_circle": { "center_mm": [16.5, 8.5], "radius_mm": 8.5, "diameter_mm": 17 },
+      "slot": { "left_x_mm": 11.5, "right_x_mm": 21.5, "width_mm": 10 },
+      "bottom_semicircle": { "center_mm": [16.5, 28], "radius_mm": 5 },
+      "intersections_mm": { "slot_top_y_mm": 15.37386354243376, "bottom_semi_top_y_mm": 23 },
+      "notes": "ViewBox coordinates equal millimetres. Use this SVG as source of truth for geometry; export raster at chosen pixels-per-mm (PPM)."
+    }
+  </metadata>
+
+  <!-- Visible outline (stroke only). For ML masks you may prefer to fill the interior (fill=black) to create a binary mask. -->
+  <g id="outline" fill="none" stroke="#FF0000" stroke-width="0.9" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Path constructed from top point, around top circle to right intersection, down slot, bottom semicircle, back up left slot, and around to top -->
+    <path d="
+      M 16.5 0
+      A 8.5 8.5 0 0 1 21.5 15.37386354243376
+      L 21.5 23
+      A 5 5 0 0 1 11.5 23
+      L 11.5 15.37386354243376
+      A 8.5 8.5 0 0 1 16.5 0
+      Z
+    "/>
+  </g>
+
+  <!-- Optional: a filled mask (black filled shape). ML pipelines often prefer filled masks (single-channel). Uncomment if needed.
+  <g id="filled_mask" fill="#000000" stroke="none">
+    <path d="M 16.5 0 A 8.5 8.5 0 0 1 21.5 15.37386354243376 L 21.5 23 A 5 5 0 0 1 11.5 23 L 11.5 15.37386354243376 A 8.5 8.5 0 0 1 16.5 0 Z"/>
+  </g>
+  -->
+
+</svg>

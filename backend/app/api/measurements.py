@@ -1,5 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Optional
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.database import get_db
 from app.models.schemas import (
     LockModelDTO, 
     LocksListResponseDTO,
@@ -32,10 +34,10 @@ async def measure_lock(request: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/match", response_model=MatchResponseDTO)
-async def match_lock(profile: LockProfileDTO):
+async def match_lock(profile: LockProfileDTO, db: AsyncSession = Depends(get_db)):
     """Подбор аналогов замка по измеренным параметрам"""
     try:
-        matches = await matching_service.find_matches(profile)
+        matches = await matching_service.find_matches(profile, db)
         return MatchResponseDTO(matches=matches)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -46,9 +48,11 @@ async def get_locks(
     brand: Optional[str] = None,
     limit: Optional[int] = 100,
     offset: int = 0,
+    db: AsyncSession = Depends(get_db),
 ):
     """Получение списка замков"""
     locks = await matching_service.get_locks_from_db(
+        db=db,
         type=type,
         brand=brand,
         limit=limit,
@@ -57,9 +61,9 @@ async def get_locks(
     return LocksListResponseDTO(locks=locks, total=len(locks))
 
 @router.get("/{lock_id}", response_model=LockModelDTO)
-async def get_lock(lock_id: int):
+async def get_lock(lock_id: int, db: AsyncSession = Depends(get_db)):
     """Получение конкретного замка по ID"""
-    lock = await matching_service.get_lock_by_id(lock_id)
+    lock = await matching_service.get_lock_by_id(db, lock_id)
     if not lock:
         raise HTTPException(status_code=404, detail="Lock not found")
     return lock

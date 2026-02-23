@@ -51,7 +51,22 @@ class GeometryCalculator:
         return self.pixels_to_mm(max(w, h))
 
     def estimate_thickness(self, contour: np.ndarray, image_shape: tuple) -> float:
-        return 3.0
+        if contour is None or len(contour) == 0:
+            return 3.0
+        
+        area = cv2.contourArea(contour)
+        if area <= 0:
+            return 3.0
+        
+        x, y, w, h = cv2.boundingRect(contour)
+        if w <= 0 or h <= 0:
+            return 3.0
+        
+        bbox_area = w * h
+        fill_ratio = area / bbox_area if bbox_area > 0 else 0
+        
+        estimated_thickness = 3.0 * fill_ratio
+        return max(1.0, min(5.0, estimated_thickness))
 
     def calculate_plate_dimensions(
         self,
@@ -155,6 +170,14 @@ class MeasurementPipeline:
                 result.cylinder_hole_center,
                 result.handle_square_center
             )
+
+        if len(result.mounting_holes) >= 2:
+            holes = sorted(result.mounting_holes, key=lambda h: h.get('y', 0))
+            h1, h2 = holes[0], holes[1]
+            dy = h2.get('y', 0) - h1.get('y', 0)
+            dx = h2.get('x', 0) - h1.get('x', 0)
+            result.center_distance_mm = (dx**2 + dy**2) ** 0.5
+        elif result.cylinder_hole_center and result.handle_square_center:
             result.center_distance_mm = result.backset_mm
 
         for hole in mounting_holes:

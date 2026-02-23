@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.db.models import Lock
@@ -51,6 +52,38 @@ class MatchingService:
         matches.sort(key=lambda m: m.score, reverse=True)
         
         return matches[:10]
+    
+    async def get_locks_from_db(
+        self,
+        db: AsyncSession,
+        type: Optional[str] = None,
+        brand: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> list[LockModelDTO]:
+        """Получение списка замков из БД"""
+        query = select(Lock)
+        
+        if type:
+            query = query.where(Lock.type == type)
+        if brand:
+            query = query.where(Lock.brand == brand)
+        
+        query = query.limit(limit).offset(offset)
+        
+        result = await db.execute(query)
+        locks = result.scalars().all()
+        
+        return [self._lock_to_dto(lock) for lock in locks]
+    
+    async def get_lock_by_id(self, db: AsyncSession, lock_id: int) -> Optional[LockModelDTO]:
+        """Получение замка по ID"""
+        result = await db.execute(select(Lock).where(Lock.id == lock_id))
+        lock = result.scalar_one_or_none()
+        
+        if lock:
+            return self._lock_to_dto(lock)
+        return None
     
     def _calculate_match_score(self, dims, lock) -> float:
         """Расчёт score совпадения"""
