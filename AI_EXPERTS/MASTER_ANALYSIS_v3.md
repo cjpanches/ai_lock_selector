@@ -1,76 +1,115 @@
 # MASTER SYSTEM ANALYSIS
-# AI Lock Selector v3.0.0
-# Date: 2026-02-22
+# AI Lock Selector v4.0.0
+# Date: 2026-02-23
 # ====================================================
 
-## EXPERT CONSENSUS SUMMARY
+## EXPERT CONSENSUS SUMMARY (v4.0)
 
 ### Critical Issues (P0) - All Experts Agree:
 
-1. **Base64 Encoding Bug** - CRITICAL
-   - KIMI: Coordinates transformation issue
-   - GROK: bytes.toString() creates invalid base64
-   - GPT: Needs base64Encode(bytes)
-   - GEMINI: N/A
-   - **Action**: Fix in ar_camera_screen.dart line ~226
+1. **API Matching Bug** - CRITICAL (GROK)
+   - matching.py:14 - missing db parameter
+   - measurements.py:38 - missing db parameter
+   - **Action**: Add `db: AsyncSession = Depends(get_db)` to function signatures
 
-2. **Camera Preview Dimensions Swapped** - CRITICAL
-   - KIMI: previewSize.height/width used incorrectly
-   - GROK: width/height swapped in Size() call
-   - GPT: Noted in code review
-   - **Action**: Fix in ar_camera_screen.dart line ~236-237
+2. **Missing HomeScreen Import** - CRITICAL (GROK)
+   - router.dart:3 - HomeScreen not imported
+   - **Action**: Add import for HomeScreen
 
-3. **YOLO Model Not Loaded** - HIGH IMPACT
-   - GEMINI: Detector works in fallback mode
-   - KIMI: CV integration lacks resilience
-   - **Action**: Requires dataset collection (manual work)
+3. **Division by Zero** - HIGH (GEMINI, GROK)
+   - lock_pipeline.py:136 - scale_factor can be 0
+   - **Action**: Add validation `if self.scale_factor > 0`
+
+4. **GeometryCalculator Broken** - CRITICAL (GEMINI)
+   - estimate_thickness() returns hardcoded 3.0 (stub)
+   - center_distance_mm = backset_mm (incorrect logic)
+   - **Action**: Implement real thickness calculation, fix center_distance
+
+5. **YOLO Model Not Trained** - CRITICAL (GEMINI)
+   - model_path = None by default
+   - Works only in fallback mode
+   - **Action**: Collect dataset, train YOLOv8
 
 ### High Priority Issues (P1) - Consensus:
 
-1. **No Error Handling in CV Flow**
-   - All experts noted missing try/catch, timeouts, retry logic
-   
-2. **Test Coverage Missing**
-   - KIMI: 2/10 for new feature
-   - GROK: No unit tests for mask_provider
-   - GPT: 3/10 overall coverage
-   
-3. **Confidence Not Used**
-   - KIMI: alignmentScore should use CV confidence
-   - GROK: confidence parameter ignored
-   - GPT: N/A
+1. **CORS Security** - MEDIUM (KIMI, GROK)
+   - allow_origins=["*"] in main.py:24
+   - **Action**: Restrict to specific domains for production
 
-### Medium Priority Issues (P2):
+2. **Hardcoded Measurements** - HIGH (GEMINI)
+   - measurement_service.py returns 55.0, 72.0 always
+   - **Action**: Integrate real CV pipeline
 
-1. **SRP Violation in ARCameraScreen** (455 lines)
-   - GPT: Should split into multiple files
-   
-2. **Hardcoded Values**
-   - All experts noted magic numbers
-
-3. **Missing Equatable for State Classes**
-   - GPT: Required by AGENTS.md
+3. **Test Coverage Low** - HIGH (All)
+   - ~10-20% coverage
+   - **Action**: Add unit and integration tests
 
 ---
 
-## INDEPENDENT MASTER ANALYSIS
+## INDEPENDENT EXPERT ANALYSIS
 
-### Architecture Assessment: 7.2/10
-The auto-alignment feature follows correct architecture patterns:
-- Proper Riverpod usage with StateNotifierProvider
-- Clean separation between UI and business logic
-- Good visual feedback for users
+### KIMI (ARCHITECT) - v4.0
+**Overall Project Score: 5.5/10**
 
-### Technical Debt Assessment: HIGH
-- No unit tests for new functionality
-- Hardcoded values throughout
-- No error recovery mechanisms
-- Missing Equatable implementations
+| Component | Score | Key Issues |
+|-----------|-------|------------|
+| Mobile App | 6/10 | Hardcoded URLs, no DI |
+| Backend | 5.5/10 | API duplication, mock data |
+| CV Pipeline | 6/10 | YOLO not trained, no validation |
+| Tests | 3/10 | Minimal coverage |
 
-### Risk Assessment:
-1. Auto-alignment won't work in production due to base64 bug
-2. CV fallback is insufficient for production accuracy
-3. No monitoring for production issues
+**Architecture Issues:**
+- No Clean Architecture
+- High coupling between modules
+- No caching
+- No scalability planning
+
+---
+
+### GROK (CODE ANALYZER) - v4.0
+**Overall Code Score: 5.8/10**
+
+**Critical Bugs Found:**
+1. API matching crash (missing db param)
+2. Router import missing
+3. Division by zero in CV
+
+**Code Smells:**
+- Magic numbers throughout
+- Duplicate LockType enum
+- Unused imports
+- Hardcoded values
+
+---
+
+### GEMINI (ML/CV EXPERT) - v4.0
+**Overall CV Score: 4/10**
+
+| Component | Score | Status |
+|-----------|-------|--------|
+| Contour Analyzer | 5/10 | Prototype |
+| Edge Detector | 6/10 | Prototype |
+| Geometry Calculator | 3/10 | BROKEN |
+| YOLO Detector | 1/10 | NOT READY |
+
+**CV Accuracy Issues:**
+- backset: ~3-5mm (target: ±1.5mm)
+- center_distance: BROKEN
+- plate dimensions: ~2-3mm (target: ±1.5mm)
+
+---
+
+### GPT (CODER) - v4.0
+**Overall Code Quality: 5.5/10**
+
+**Refactoring Opportunities:**
+- High: LockType duplication, API duplication, constants
+- Low: Import cleanup, logging improvement
+
+**Test Coverage:**
+- Mobile: ~10%
+- Backend: ~20%
+- CV Pipeline: ~15%
 
 ---
 
@@ -78,81 +117,119 @@ The auto-alignment feature follows correct architecture patterns:
 
 ### Immediate (P0 - Fix Before Release):
 
-1. **Fix Base64 Encoding**
-   - File: `mobile_app/lib/features/ar_camera/ar_camera_screen.dart`
-   - Change: `bytes.toString()` → `base64Encode(bytes)`
+1. **Fix API Matching**
+   - File: `backend/app/api/matching.py:14`, `measurements.py:38`
+   - Change: Add `db: AsyncSession = Depends(get_db)`
+   - Owner: Backend Team
+
+2. **Fix Router Import**
+   - File: `mobile_app/lib/core/router.dart:3`
+   - Change: Add HomeScreen import
    - Owner: Mobile Team
 
-2. **Fix Camera Preview Dimensions**
-   - File: `mobile_app/lib/features/ar_camera/ar_camera_screen.dart`  
-   - Change: Swap width/height in Size() constructor
-   - Owner: Mobile Team
+3. **Fix Division by Zero**
+   - File: `cv_pipeline/src/lock_pipeline.py:136`
+   - Change: Add validation before division
+   - Owner: CV Team
 
-3. **Fix Focal Point Delta Bug**
-   - File: `mobile_app/lib/providers/mask_provider.dart`
-   - Change: Use `focalPointDelta.dy` for Y axis
-   - Owner: Mobile Team
+4. **Fix GeometryCalculator**
+   - File: `cv_pipeline/src/geometry_calculator.py:54, 158`
+   - Change: Implement estimate_thickness(), fix center_distance
+   - Owner: CV Team
 
 ### Short-term (P1 - Next Sprint):
 
-4. **Add Error Handling**
-   - Add timeout to CV requests
-   - Add retry logic (2-3 attempts)
-   - Add user-friendly error messages
+5. **Secure CORS**
+   - File: `backend/app/main.py:24`
+   - Change: Replace `["*"]` with specific domains
 
-5. **Add Confidence Integration**
-   - Use CV confidence for alignmentScore
-   - Display confidence to user
+6. **Integrate Real CV**
+   - File: `backend/app/services/measurement_service.py`
+   - Change: Remove mock data, use real CV pipeline
 
-6. **Add Unit Tests**
-   - Test MaskNotifier.applyAutoDetection()
-   - Test coordinate transformations
+7. **Add Tests**
+   - Target: 50%+ coverage
+   - Focus: API endpoints, matching service, providers
 
 ### Medium-term (P2 - This Quarter):
 
-7. **Refactor ARCameraScreen**
-   - Split DINMaskPainter to separate file
-   - Split _buildTopBar, _buildBottomControls
+8. **Train YOLO Model**
+   - Collect 500+ images
+   - Label with CVAT
+   - Train yolov8n.pt
+   - Target: mAP@0.5 > 0.8
 
-8. **Add Equatable**
-   - Add equatable package to pubspec.yaml
-   - Use for MaskState, CaptureState
+9. **Refactor Code**
+   - Extract LockType to shared enum
+   - Create config.py for CV constants
+   - Add dependency injection
 
-9. **Collect YOLO Dataset**
-   - Manual photo collection (500+ images)
-   - Train YOLO model for better accuracy
+10. **Improve Architecture**
+    - Add use cases layer
+    - Implement caching
+    - Add database migrations
 
 ---
 
-## COMPONENT SCORES (Consensus)
+## COMPONENT SCORES (v4.0)
 
-| Component | Score | Trend |
-|-----------|-------|-------|
-| Mobile App | 7.0/10 | → |
-| Backend | 7.2/10 | → |
-| CV Pipeline | 6.0/10 | ↓ (YOLO missing) |
-| Auto-Alignment | 5.0/10 | NEW (needs fixes) |
-| Test Coverage | 4.0/10 | ↓ |
-| Overall | 6.5/10 | → |
+| Component | KIMI | GROK | GEMINI | GPT | Average |
+|-----------|------|------|--------|-----|---------|
+| Mobile App | 6/10 | 6.5/10 | 6/10 | 6/10 | 6.1/10 |
+| Backend | 5.5/10 | 6/10 | 5/10 | 5/10 | 5.4/10 |
+| CV Pipeline | 6/10 | 5.5/10 | 4/10 | 6/10 | 5.4/10 |
+| Tests | 3/10 | - | - | - | 3/10 |
+| **Overall** | **5.5/10** | **5.8/10** | **4/10** | **5.5/10** | **5.2/10** |
 
 ---
 
 ## FILES FOR NEXT DEVELOPMENT CYCLE
 
-### Primary:
-- `mobile_app/lib/features/ar_camera/ar_camera_screen.dart`
-- `mobile_app/lib/providers/mask_provider.dart`
+### Primary (P0):
+- `backend/app/api/matching.py` - Fix db parameter
+- `backend/app/api/measurements.py` - Fix db parameter
+- `mobile_app/lib/core/router.dart` - Add HomeScreen import
+- `cv_pipeline/src/lock_pipeline.py` - Add scale_factor validation
+- `cv_pipeline/src/geometry_calculator.py` - Fix calculations
 
-### Secondary:
-- `mobile_app/lib/core/constants.dart` (extract magic numbers)
-- `cv_pipeline/src/` (add error handling)
+### Secondary (P1):
+- `backend/app/main.py` - Fix CORS
+- `backend/app/services/measurement_service.py` - Remove mock data
+- Add unit tests
+
+### Tertiary (P2):
+- Train YOLO model
+- Refactor code
+- Improve architecture
 
 ---
 
-**MASTER SYSTEM RECOMMENDATION: Fix P0 bugs before any new features. Auto-alignment feature is non-functional without these fixes.**
+## TECHNICAL DEBT SUMMARY
+
+| Debt | Priority | Effort | Owner |
+|------|----------|--------|-------|
+| API bugs | P0 | 1hr | Backend |
+| Router import | P0 | 5min | Mobile |
+| GeometryCalculator | P1 | 4hr | CV |
+| CORS security | P1 | 1hr | Backend |
+| Mock data removal | P1 | 2hr | Backend |
+| Test coverage | P1 | 4hr | QA |
+| YOLO training | P2 | 40hr | ML |
+
+---
+
+**MASTER SYSTEM RECOMMENDATION: Fix P0 bugs immediately. Project cannot run without these fixes.**
 
 **Next Session Should Start From:**
-1. Fix base64 encoding
-2. Fix camera dimensions  
-3. Fix focal point delta
-4. Add unit tests
+1. Fix API matching (db parameter)
+2. Fix router import
+3. Fix division by zero
+4. Fix GeometryCalculator calculations
+5. Add tests
+
+---
+
+## VERSION HISTORY
+
+- v4.0 (2026-02-23): Expert audit completed, all 4 experts analyzed project
+- v3.0 (2026-02-22): Initial master analysis
