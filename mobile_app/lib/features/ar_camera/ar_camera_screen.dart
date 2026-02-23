@@ -100,20 +100,12 @@ class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBin
             child: GestureDetector(
               onScaleUpdate: _onScaleUpdate,
               behavior: HitTestBehavior.opaque,
-              child: AnimatedBuilder(
-                animation: _animationController,
-                builder: (context, child) {
-                  return CustomPaint(
-                    painter: DINMaskPainter(
-                      position: maskState.position,
-                      scale: maskState.scale,
-                      alignmentScore: maskState.alignmentScore,
-                      isAligned: maskState.isAligned,
-                      pulseValue: maskState.isAligned ? _pulseAnimation.value : 1.0,
-                      glowValue: _glowAnimation.value,
-                    ),
-                  );
-                },
+              child: CustomPaint(
+                painter: DINMaskPainter(
+                  position: maskState.position,
+                  scale: maskState.scale,
+                  isAligned: maskState.isAligned,
+                ),
               ),
             ),
           ),
@@ -140,7 +132,6 @@ class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBin
 
   Widget _buildTopBar(bool isAligned) {
     final maskState = ref.watch(maskProvider);
-    final isDetecting = maskState.isAutoDetecting;
     
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -150,63 +141,31 @@ class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBin
         children: [
           IconButton(
             onPressed: widget.onCancel,
-            icon: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Icon(Icons.close, color: Colors.white, size: 28, key: ValueKey(isAligned)),
+            icon: const Icon(Icons.close, color: Colors.white, size: 28),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black54,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.vpn_key,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'DIN 17×33мм',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
           ),
-          GestureDetector(
-            onTap: isDetecting ? null : () => _runAutoDetect(),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isAligned ? Colors.green : Colors.orange,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: isAligned
-                    ? [BoxShadow(color: Colors.green.withOpacity(0.5), blurRadius: 10, spreadRadius: 2)]
-                    : null,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  isDetecting
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Icon(
-                          isAligned ? Icons.check_circle : Icons.info_outline,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                  const SizedBox(width: 8),
-                  Text(
-                    isDetecting
-                        ? 'Детекция...'
-                        : (isAligned ? 'Маска совмещена' : 'Совместите маску'),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: isDetecting ? null : () => _runAutoDetect(),
-            icon: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                isDetecting ? Icons.hourglass_empty : Icons.auto_fix_high,
-                color: Colors.white,
-                size: 28,
-                key: ValueKey(isDetecting),
-              ),
-            ),
-          ),
+          const SizedBox(width: 48),
         ],
       ),
     );
@@ -290,36 +249,27 @@ class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBin
           ),
           const SizedBox(height: 24),
           GestureDetector(
-            onTap: isAligned && !isCapturing ? _captureFrame : null,
+            onTap: isCapturing ? null : _captureFrame,
             child: AnimatedBuilder(
               animation: _animationController,
               builder: (context, child) {
                 return Transform.scale(
-                  scale: isCapturing ? 0.9 : (isAligned ? _pulseAnimation.value : 1.0),
+                  scale: isCapturing ? 0.9 : 1.0,
                   child: Container(
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isAligned ? Colors.green : Colors.white,
+                        color: Colors.white,
                         width: 4,
                       ),
-                      color: isAligned ? Colors.green.withOpacity(_glowAnimation.value) : Colors.transparent,
-                      boxShadow: isAligned
-                          ? [
-                              BoxShadow(
-                                color: Colors.green.withOpacity(0.5),
-                                blurRadius: 20 * _glowAnimation.value,
-                                spreadRadius: 5 * _glowAnimation.value,
-                              ),
-                            ]
-                          : null,
+                      color: Colors.transparent,
                     ),
                     child: isCapturing
                         ? const CircularProgressIndicator(color: Colors.white)
                         : Icon(
-                            isAligned ? Icons.check : Icons.camera_alt,
+                            Icons.camera_alt,
                             color: Colors.white,
                             size: 36,
                           ),
@@ -329,28 +279,14 @@ class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBin
             ),
           ),
           const SizedBox(height: 16),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: Row(
-              key: ValueKey(alignmentScore),
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  alignmentScore > 0.8 ? Icons.check_circle : Icons.warning,
-                  color: alignmentScore > 0.8 ? Colors.green : Colors.orange,
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Точность: ${(alignmentScore * 100).toInt()}%',
-                  style: TextStyle(
-                    color: alignmentScore > 0.8 ? Colors.green : Colors.orange,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+          if (!isAligned)
+            Text(
+              'Совместите маску с отверстием и нажмите кнопку',
+              style: TextStyle(
+                color: Colors.orange.withOpacity(0.8),
+                fontSize: 12,
+              ),
             ),
-          ),
         ],
       ),
     );

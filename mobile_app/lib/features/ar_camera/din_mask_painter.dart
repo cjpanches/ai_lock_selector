@@ -1,93 +1,134 @@
 import 'package:flutter/material.dart';
 
 class DINMaskPainter extends CustomPainter {
+  static const double maskWidthPx = 60.0;
+  static const double maskHeightPx = 120.0;
+
   final Offset position;
   final double scale;
-  final double alignmentScore;
   final bool isAligned;
-  final double pulseValue;
-  final double glowValue;
 
   DINMaskPainter({
     required this.position,
     required this.scale,
-    required this.alignmentScore,
     required this.isAligned,
-    this.pulseValue = 1.0,
-    this.glowValue = 0.5,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(position.dx * size.width, position.dy * size.height);
-    const baseMaskWidth = 150.0;
-    const baseMaskHeight = 100.0;
-    final maskWidth = baseMaskWidth * pulseValue;
-    final maskHeight = baseMaskHeight * pulseValue;
+    final center = Offset(
+      position.dx * size.width,
+      position.dy * size.height,
+    );
 
-    final fillColor = isAligned ? Colors.green : Colors.red;
+    final maskWidth = maskWidthPx * scale;
+    final maskHeight = maskHeightPx * scale;
+
     final strokeColor = isAligned ? Colors.green : Colors.red;
-
-    final fillPaint = Paint()
-      ..color = fillColor.withOpacity(glowValue * 0.5)
-      ..style = PaintingStyle.fill;
+    final fillColor = isAligned ? Colors.green.withOpacity(0.15) : Colors.red.withOpacity(0.15);
 
     final strokePaint = Paint()
       ..color = strokeColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
+      ..strokeWidth = 2.0;
 
-    final glowPaint = Paint()
-      ..color = fillColor.withOpacity(glowValue * 0.3)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 8
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    final fillPaint = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
 
     canvas.save();
     canvas.translate(center.dx, center.dy);
-    canvas.scale(scale);
-    canvas.scale(pulseValue);
 
-    final rect = Rect.fromCenter(center: Offset.zero, width: maskWidth, height: maskHeight);
-    final dinPath = _buildDINPath(rect);
+    final rect = Rect.fromCenter(
+      center: Offset.zero,
+      width: maskWidth,
+      height: maskHeight,
+    );
 
-    canvas.drawPath(dinPath, glowPaint);
-    canvas.drawPath(dinPath, fillPaint);
-    canvas.drawPath(dinPath, strokePaint);
+    final path = _buildEuroProfilePath(rect);
 
-    _drawDINLabel(canvas, rect);
+    canvas.drawPath(path, fillPaint);
+    canvas.drawPath(path, strokePaint);
 
     canvas.restore();
   }
 
-  void _drawDINLabel(Canvas canvas, Rect rect) {
-    final textPainter = TextPainter(
-      text: const TextSpan(
-        text: 'DIN',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    textPainter.paint(canvas, Offset(-textPainter.width / 2, rect.bottom + 5));
-  }
-
-  Path _buildDINPath(Rect rect) {
+  Path _buildEuroProfilePath(Rect rect) {
     final path = Path();
-    final waistWidth = rect.width * 0.3;
-    final waistHeight = rect.height * 0.4;
-    path.moveTo(rect.left, rect.top);
-    path.lineTo(rect.left + (rect.width - waistWidth) / 2, rect.top);
-    path.lineTo(rect.left + (rect.width - waistWidth) / 2, rect.top + (rect.height - waistHeight) / 2);
-    path.lineTo(rect.left, rect.bottom);
-    path.lineTo(rect.right, rect.bottom);
-    path.lineTo(rect.right - (rect.width - waistWidth) / 2, rect.top + (rect.height + waistHeight) / 2);
-    path.lineTo(rect.right - (rect.width - waistWidth) / 2, rect.top);
-    path.lineTo(rect.right, rect.top);
+    
+    final w = rect.width;
+    final h = rect.height;
+    
+    // Scale factors: 33mm height = h pixels
+    // 17mm width = w pixels (top semicircle diameter)
+    final mmToPxY = h / 33.0;
+    final mmToPxX = w / 17.0;
+    
+    // Key coordinates from euro_profile_exact.svg (in mm):
+    // Top point: (16.5, 0)
+    // Right intersection: (21.5, 15.37386354243376)
+    // Right slot bottom: (21.5, 23)
+    // Left slot bottom: (11.5, 23)
+    // Left intersection: (11.5, 15.37386354243376)
+    
+    // Convert to pixel coordinates (centered)
+    final halfW = w / 2;
+    final halfH = h / 2;
+    
+    // Top point (center X = 0 in our coordinate system)
+    final topY = -halfH;
+    
+    // Right intersection point
+    final rightX = (21.5 - 16.5) * mmToPxX;  // 5mm to the right of center
+    final rightIntY = -halfH + 15.37386 * mmToPxY;
+    
+    // Right slot bottom
+    final rightSlotY = -halfH + 23.0 * mmToPxY;
+    
+    // Left intersection
+    final leftX = (11.5 - 16.5) * mmToPxX;   // 5mm to the left of center
+    final leftIntY = -halfH + 15.37386 * mmToPxY;
+    
+    // Bottom center
+    final bottomY = halfH;
+    
+    // Radii in pixels
+    final topRadius = 8.5 * mmToPxY;  // 8.5mm
+    final bottomRadius = 5.0 * mmToPxY; // 5mm
+    
+    // Start at top center
+    path.moveTo(0, topY);
+    
+    // Top semicircle (clockwise) from top to right intersection
+    path.arcToPoint(
+      Offset(rightX, rightIntY),
+      radius: Radius.circular(topRadius),
+      clockwise: true,
+      largeArc: false,
+    );
+    
+    // Line down to slot bottom (right side)
+    path.lineTo(rightX, rightSlotY);
+    
+    // Bottom semicircle (clockwise) from right to left
+    path.arcToPoint(
+      Offset(leftX, rightSlotY),
+      radius: Radius.circular(bottomRadius),
+      clockwise: true,
+      largeArc: false,
+    );
+    
+    // Line up to left intersection
+    path.lineTo(leftX, leftIntY);
+    
+    // Left semicircle (clockwise) back to top
+    path.arcToPoint(
+      Offset(0, topY),
+      radius: Radius.circular(topRadius),
+      clockwise: true,
+      largeArc: false,
+    );
+    
     path.close();
     return path;
   }
@@ -96,7 +137,5 @@ class DINMaskPainter extends CustomPainter {
   bool shouldRepaint(covariant DINMaskPainter oldDelegate) =>
       position != oldDelegate.position ||
       scale != oldDelegate.scale ||
-      isAligned != oldDelegate.isAligned ||
-      pulseValue != oldDelegate.pulseValue ||
-      glowValue != oldDelegate.glowValue;
+      isAligned != oldDelegate.isAligned;
 }
