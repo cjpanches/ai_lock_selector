@@ -1,0 +1,130 @@
+================================================================================
+MASTER PROMPT FOR ROBOFLOW INSTRUCTION GENERATION
+AI Lock Selector Project - YOLO Training Data Preparation
+================================================================================
+
+## PROJECT CONTEXT
+
+You are helping prepare training data for a YOLO computer vision model that will detect and measure врезные дверные замки (mortise door locks) from photos.
+
+## PROJECT GOAL
+
+Build a system that:
+1. Takes a photo of a door lock from top-down view
+2. Uses AR mask with Euro cylinder profile as scale reference
+3. Detects lock components using YOLO
+4. Measures dimensions with ±0.5-1.0mm accuracy
+5. Matches against database of 147 locks
+
+## CRITICAL REFERENCE DATA
+
+### Euro Cylinder (Цилиндр) - THE MOST IMPORTANT OBJECT
+
+**Engineering Drawing Available:** `/mask/euro_profile_exact.svg`
+
+**Exact Dimensions:**
+- Total height: 33mm
+- Top circle: diameter 17mm (radius 8.5mm)
+- **Slot width: 10mm** ← THIS IS THE CALIBRATION REFERENCE
+- Bottom semicircle: diameter 10mm (radius 5mm)
+
+**Shape:** Complex - looks like figure-8 but with flattened middle
+- Top half: semicircle (17mm diameter)
+- Middle: vertical rectangular slot (10mm wide)
+- Bottom half: semicircle (10mm diameter)
+
+**Why 10mm slot is critical:**
+- Used for SCALE CALIBRATION
+- Formula: pixels_per_mm = detected_slot_width_pixels / 10.0
+- All other measurements depend on this calibration
+
+### Other Objects to Detect
+
+| Class | Name | Description | Typical Size |
+|-------|------|-------------|-------------|
+| 0 | lock_plate | Metal plate (face) of lock | 3-8mm thick, 150-280mm tall |
+| 1 | cylinder_hole | Euro cylinder hole (33x17mm) | 33mm x 17mm total |
+| 2 | mounting_hole | Mounting screws holes (2x) | 6-12mm diameter |
+| 3 | handle_square | Handle square hole | 8x8mm or 9x9mm or 10x10mm |
+
+### Key Measurements (from database of 147 locks)
+
+| Parameter | Russian | Range (mm) | Tolerance |
+|-----------|---------|------------|-----------|
+| Backset | Бэксет | 20-68 | ±2.0mm |
+| Center Distance | Межосевое | 50-92 | ±3.0mm |
+| Plate Width | Ширина планки | 3-8 | ±2.0mm |
+| Plate Height | Высота планки | 150-280 | ±3.0mm |
+
+## FILES REFERENCE
+
+### Engineering Drawings:
+- `mask/euro_profile_exact.svg` - Euro cylinder exact geometry (SOURCE OF TRUTH)
+- `mask/1119.png` - Visual reference of DIN mask
+- `mask/1.svg`, `mask/2.svg`, etc. - Alternative visualizations
+
+### Code:
+- `cv_pipeline/train_yolo.py` - YOLO training script
+- `cv_pipeline/src/geometry_calculator.py` - Measurement calculations
+- `cv_pipeline/dataset/lock_dataset.yaml` - Dataset configuration
+- `mobile_app/lib/features/ar_camera/din_mask_painter.dart` - AR mask implementation
+
+### Documentation:
+- `ROBOFLOW_INSTRUCTION.md` - Detailed labeling guide
+- `PROJECT_DOCUMENTATION_FOR_AI.md` - Full project documentation
+
+## ROBOFLOW REQUIREMENTS
+
+### Format:
+- Export as: **YOLOv8 Oriented Bounding Box (OBB)**
+- This supports rotated boxes for better fit on angled locks
+
+### Classes to Create in Roboflow:
+1. lock_plate
+2. cylinder_hole
+3. mounting_hole
+4. handle_square
+
+### Annotation Guidelines:
+
+**cylinder_hole (MOST CRITICAL):**
+- Draw polygon around the ENTIRE 33x17mm silhouette
+- Include both top circle and bottom semicircle and the slot between them
+- This is both a detection target AND the scale calibration reference
+- Label accurately - model will use this for all measurements
+
+**lock_plate:**
+- Draw rectangle/polygon around entire visible metal plate
+- Usually the largest rectangular object in frame
+
+**mounting_hole:**
+- 2 holes, usually vertically aligned
+- Draw ellipse/circle around each
+- Label ALL visible mounting holes
+
+**handle_square:**
+- Square or rectangular hole in middle/lower part
+- Usually 8x8mm, 9x9mm, or 10x10mm
+- Draw rectangle around it
+
+## EXPECTED OUTPUT
+
+Please create a detailed instruction document for manual labeling in Roboflow that includes:
+1. Visual examples of each class (describe what to look for)
+2. Exact geometry specifications for cylinder_hole (33x17mm, 10mm slot)
+3. Why cylinder_hole is critical for calibration
+4. Photo requirements (angle, lighting, resolution)
+5. Minimum dataset size recommendations
+6. Export format settings
+
+## KEY INSIGHT FOR AI
+
+The cylinder_hole (class 1) is special:
+- It's an object to detect (for matching)
+- It's ALSO the scale reference for ALL measurements
+- The 10mm slot width is used to calculate pixels_per_mm
+- Without this, no accurate measurements are possible
+
+================================================================================
+END OF MASTER PROMPT
+================================================================================

@@ -60,14 +60,14 @@
 
 ### DIN Marker (Critical!)
 The **cylinder hole** serves as the scale reference:
-- Standard DIN size: **10mm x 17mm**
-- Formula: `scale_factor = cylinder_hole_width_pixels / 10.0`
-- This gives: `pixels_per_mm = cylinder_hole_width_pixels / 10`
+- Euro cylinder total size: **33mm height x 17mm width**
+- Top circle: diameter **17mm**
+- **Slot width: 10mm** (the vertical "bridge" between circles)
+- Bottom semicircle: diameter **10mm**
 
-### Why DIN?
-- DIN 18251 standard for Euro profile cylinders
-- Always present on врезные замки
-- Known fixed size = perfect for calibration
+Formula: `scale_factor = slot_width_pixels / 10.0`
+
+**Note:** The 10mm slot is the most reliable dimension for calibration.
 
 ---
 

@@ -50,7 +50,7 @@ cv_pipeline/src/
 ### Масштаб
 Ключевая формула:
 ```python
-scale_factor = marker_width_pixels / 10.0  # 10mm = ширина DIN
+scale_factor = marker_width_pixels / 10.0  # 10mm = ширина слота в евроцилиндре
 ```
 
 ### Точность

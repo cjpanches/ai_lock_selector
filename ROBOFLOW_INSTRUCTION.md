@@ -27,18 +27,17 @@
 
 ### Class 1: cylinder_hole (Отверстие под цилиндр / Euro cylinder)
 **Description:** Отверстие для установки цилиндрового механизма (евроцилиндр)
-**Visual:** Прямоугольное отверстие, обычно в верхней части замка
-**Standard DIN size:** 10mm x 17mm (эталон для калибровки масштаба!)
-**Variants:**
-- 10x17mm (DIN стандарт)
-- 10x15mm
-- 10x13mm  
-- 8x8mm (малый цилиндр)
+**Visual:** Сложная форма - верхняя часть полукруглая (⌀17mm), затем вертикальный слот шириной 10mm, затем нижняя полуокружность (⌀10mm)
+**Total size: 33mm height x 17mm width**
 
-**How to label:** Draw rectangle around the cylinder hole opening (внутренний контур отверстия)
+**Exact geometry (from engineering drawing):**
+- Total height: **33mm**
+- Top circle: diameter **17mm** (radius 8.5mm)
+- Vertical slot: width **10mm** (x=11.5mm to x=21.5mm)
+- Bottom semicircle: radius **5mm** (diameter 10mm)
+- The **10mm slot** is the "bridge" connecting the two circles
 
-**CRITICAL:** This hole is used as REFERENCE for scale calculation!
-- scale_factor = hole_width_pixels / 10.0 (DIN width = 10mm)
+**How to label:** Draw polygon/OBB around the entire Euro cylinder hole silhouette (the entire 33x17mm shape)
 
 ---
 
@@ -70,8 +69,8 @@
 
 ### Class 4: din_marker (DIN reference - if using separate marker)
 **Description:** Специальный DIN маркер (если используется отдельный референс)
-**Size:** 10mm x 17mm rectangle
-**Note:** Usually the cylinder_hole IS the DIN marker
+**Size:** 33mm x 17mm (same as cylinder_hole geometry)
+**Note:** Usually the cylinder_hole (class 1) IS the DIN marker - no need for separate class
 
 ---
 
@@ -194,7 +193,39 @@ fliplr: 0.5
 
 ---
 
-## 10. HOW TO USE IN APPLICATION
+## 10. SCALE CALIBRATION (CRITICAL!)
+
+### How Calibration Works:
+The **cylinder_hole (class 1)** serves as the SCALE REFERENCE for ALL measurements in the application.
+
+### Formula:
+```python
+# Using the 10mm SLOT WIDTH (vertical bridge between circles)
+pixels_per_mm = detected_slot_width_pixels / 10.0
+```
+
+### Why 10mm?
+- The 10mm is the **slot width** (the vertical "bridge" between top circle and bottom semicircle)
+- This is the most reliable vertical dimension in the Euro cylinder shape
+- It stays consistent across different cylinder brands
+
+### Using for Measurements:
+```python
+# After detecting objects with YOLO:
+backset_mm = distance_pixels / pixels_per_mm
+plate_width_mm = width_pixels / pixels_per_mm
+# etc.
+```
+
+### Important:
+- Always label the **entire** cylinder_hole silhouette (the full 33x17mm shape)
+- The YOLO model will detect the full shape
+- The application will calculate scale using the 10mm slot width
+- This provides accuracy of ±0.5-1.0mm
+
+---
+
+## 11. HOW TO USE IN APPLICATION
 
 ### Flow:
 1. User takes photo with AR mask (DIN marker visible)
