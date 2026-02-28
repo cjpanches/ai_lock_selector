@@ -141,6 +141,11 @@ class TestLockPipeline:
         from lock_pipeline import LockContourPipeline
         
         pipeline = LockContourPipeline()
-        marker_bbox = (0, 0, 20, 10)
+        
+        marker_bbox = (0, 0, 100, 330)
         scale = pipeline.calculate_scale_factor(marker_bbox)
-        assert scale == 2.0
+        assert scale == 10.0
+        
+        marker_bbox_obb = (0, 0, 100, 330, 0)
+        scale_obb = pipeline.calculate_scale_factor(marker_bbox_obb)
+        assert scale_obb == 10.0
