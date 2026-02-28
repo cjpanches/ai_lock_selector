@@ -1,0 +1,186 @@
+================================================================================
+OPENCODE STARTUP - AI LOCK SELECTOR PROJECT
+================================================================================
+Version: 4.4.0
+Date: 2026-02-28
+Project: /home/bot/porojects/ai_lock_project
+GitHub: https://github.com/cjpanches/ai_lock_selector
+Branch: develop
+
+================================================================================
+QUICK START
+================================================================================
+
+Check system status:
+- Backend: curl http://127.0.0.1:8001/health
+- Flutter Web: curl http://localhost:8083
+
+Run tests:
+- cd backend && pytest
+
+================================================================================
+PROJECT STRUCTURE
+================================================================================
+
+mobile_app/          - Flutter app (Riverpod + GoRouter)
+backend/             - FastAPI (SQLite, 147 locks)
+cv_pipeline/         - CV + YOLO
+AI_EXPERTS/         - Expert audits
+mask/                - AR mask (euro_profile_exact.svg - SOURCE OF TRUTH)
+photo for aducation/ - 934 photos collected
+
+================================================================================
+CURRENT STATUS (v4.4.0)
+================================================================================
+
+COMPONENTS:
+- Backend: Working (port 8001)
+- Flutter Web: Working (port 8083)
+- Database: 147 locks
+- CV Pipeline: Fixed (scale factor bug corrected)
+- Tests: 38/38 passing
+
+YOLO TRAINING STATUS:
+- Photos: 934 collected (need upload to Roboflow)
+- Model: Not trained yet
+- Need: Label in Roboflow → Export → Train
+
+================================================================================
+CRITICAL REFERENCE: EURO CYLINDER
+================================================================================
+
+This is the MOST IMPORTANT object - used for calibration!
+
+SVG Source: mask/euro_profile_exact.svg
+
+Exact dimensions:
+- Total height: 33mm
+- Top circle: 17mm diameter (r=8.5mm)
+- Slot width: 10mm <-- CALIBRATION REFERENCE
+- Bottom semicircle: 10mm diameter (r=5mm)
+
+Calibration formula:
+  pixels_per_mm = detected_slot_width_pixels / 10.0
+
+CRITICAL: Without correct calibration, ALL measurements are wrong!
+
+================================================================================
+YOLO CLASSES (4 classes)
+================================================================================
+
+Class 0: lock_plate
+- Description: Металлическая планка замка
+- Label: Draw around entire visible lock plate
+
+Class 1: cylinder_hole (CRITICAL!)
+- Description: Euro cylinder hole (33x17mm)
+- Label: Draw around ENTIRE silhouette (not just slot!)
+- This is the SCALE CALIBRATION REFERENCE
+
+Class 2: mounting_hole
+- Description: Крепёжные отверстия (2 штуки)
+- Label: Draw circles around each hole
+- Note: Center distance is cylinder → handle, NOT cylinder → mounting holes!
+
+Class 3: handle_square
+- Description: Квадрат ручки (8x8mm)
+- Label: Draw rectangle around square hole
+
+================================================================================
+KEY MEASUREMENTS
+================================================================================
+
+Center Distance:
+- Measured from: cylinder center → handle square center
+- NOT from cylinder to mounting holes!
+- Range: 50-92mm
+- Tolerance: ±3mm
+
+Backset:
+- Measured from: cylinder center → handle square center
+- Same as center distance in this project
+- Range: 20-68mm
+- Tolerance: ±2mm
+
+Plate dimensions:
+- Width: 3-8mm
+- Height: 150-280mm
+
+================================================================================
+CRITICAL FIX APPLIED (v4.4)
+================================================================================
+
+BUG: scale_factor calculation was WRONG!
+- OLD: max(w,h) / 10.0 → 33mm used instead of 10mm
+- NEW: min(w,h) / 10.0 → correct slot width (10mm)
+
+Files changed:
+- cv_pipeline/src/lock_pipeline.py
+- cv_pipeline/src/geometry_calculator.py
+- cv_pipeline/train_yolo.py
+- cv_pipeline/dataset/lock_dataset.yaml
+
+================================================================================
+DOCUMENTATION FILES
+================================================================================
+
+For Roboflow:
+- ROBOFLOW_INSTRUCTION.md / .txt - Full labeling guide
+- ROBOFLOW_STEP_BY_STEP.txt - Step-by-step guide
+
+For AI/ML:
+- PROJECT_DOCUMENTATION_FOR_AI.md - Full project docs
+- ROBOFLOW_MASTER_PROMPT.txt - Master prompt for AI
+- KIMI_STATUS_REPORT.txt - Status report
+
+Expert reviews:
+- EXPERT_REVIEWS.txt - Expert summaries
+- COMPREHENSIVE_AUDIT_v4.4.md - Full audit
+
+================================================================================
+NEXT STEPS (Priority Order)
+================================================================================
+
+1. Upload photos to Roboflow (934 photos in "photo for aducation/")
+2. Create 4 classes: lock_plate, cylinder_hole, mounting_hole, handle_square
+3. Label all photos
+4. Export as YOLOv8 OBB
+5. Train: cd cv_pipeline && python train_yolo.py --epochs 100
+6. Test accuracy (±0.5-1.0mm target)
+
+================================================================================
+COMMANDS
+================================================================================
+
+Start backend:
+cd backend && uvicorn app.main:app --host 127.0.0.1 --port 8001
+
+Start Flutter:
+cd mobile_app && flutter run
+
+Build Flutter web:
+cd mobile_app && flutter build web
+python3 -m http.server 8083 -d build/web/
+
+Run tests:
+cd backend && pytest
+
+Train YOLO:
+cd cv_pipeline && python train_yolo.py --epochs 100
+
+================================================================================
+IMPORTANT INSIGHT
+================================================================================
+
+The cylinder_hole (class 1) serves TWO purposes:
+1. Object detection (YOLO)
+2. Scale calibration (10mm slot width)
+
+Without correct calibration, ALL measurements are wrong!
+
+Center distance = cylinder center → handle square center
+(NOT cylinder → mounting holes!)
+
+================================================================================
+END OF STARTUP
+================================================================================
