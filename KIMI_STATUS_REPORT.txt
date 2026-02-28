@@ -1,0 +1,242 @@
+================================================================================
+AI LOCK SELECTOR - FULL PROJECT STATUS FOR KIMI AI
+================================================================================
+Generated: 2026-02-28
+Version: 4.3.0
+================================================================================
+
+## 1. PROJECT OVERVIEW
+
+**Name:** AI Lock Selector
+**Purpose:** Мобильное приложение для измерения врезных дверных замков по фото
+**Target Accuracy:** ±0.5mm - ±1.0mm
+**GitHub:** https://github.com/cjpanches/ai_lock_selector
+**Branch:** develop
+
+================================================================================
+
+## 2. SYSTEM COMPONENTS
+
+### Backend (FastAPI)
+- Port: 8001
+- Database: SQLite (147 locks)
+- Endpoints:
+  - GET /api/v1/locks - список замков
+  - POST /api/v1/measure/measure - измерение
+  - POST /api/v1/measure/match - подбор аналогов
+  - GET /health - health check
+
+### Mobile App (Flutter)
+- Platform: Android/iOS
+- Features: AR камера, каталог замков, измерение
+- Web build: port 8083
+
+### CV Pipeline (Python)
+- YOLO v8 для детекции
+- OpenCV для контурного анализа
+- Calibration по Euro cylinder
+
+================================================================================
+
+## 3. CRITICAL MEASUREMENTS
+
+### Euro Cylinder Dimensions (KEY REFERENCE!)
+- Total height: 33mm
+- Top circle diameter: 17mm (radius 8.5mm)
+- Slot width: 10mm <-- CRITICAL FOR CALIBRATION
+- Bottom semicircle: 10mm diameter (radius 5mm)
+
+### Calibration Formula:
+```
+pixels_per_mm = detected_slot_width_pixels / 10.0
+```
+
+### Lock Parameters:
+| Parameter | Russian | Range (mm) | Tolerance |
+|-----------|---------|------------|-----------|
+| Backset | Бэксет | 20-68 | ±2.0mm |
+| Center Distance | Межосевое | 50-92 | ±3.0mm |
+| Plate Width | Ширина планки | 3-8 | ±2.0mm |
+| Plate Height | Высота планки | 150-280 | ±3.0mm |
+
+================================================================================
+
+## 4. YOLO CLASSES (4 classes)
+
+| Class ID | Name | Description |
+|----------|------|-------------|
+| 0 | lock_plate | Металлическая планка замка |
+| 1 | cylinder_hole | Отверстие Euro цилиндра (33x17mm) |
+| 2 | mounting_hole | Крепёжные отверстия (2 шт) |
+| 3 | handle_square | Квадрат ручки (8x8mm) |
+
+================================================================================
+
+## 5. FILES STRUCTURE
+
+### Key Source Files:
+- mask/euro_profile_exact.svg - точные размеры цилиндра (ИСТОЧНИК ИСТИНЫ)
+- mobile_app/lib/features/ar_camera/din_mask_painter.dart - AR маска
+- cv_pipeline/src/lock_pipeline.py - CV пайплайн
+- cv_pipeline/src/geometry_calculator.py - расчёты размеров
+- cv_pipeline/train_yolo.py - обучение YOLO
+- cv_pipeline/dataset/lock_dataset.yaml - конфиг датасета
+- backend/locks.db - база данных (147 замков)
+
+### Documentation:
+- ROBOFLOW_INSTRUCTION.md - инструкция по разметке
+- PROJECT_DOCUMENTATION_FOR_AI.md - полная документация
+- ROBOFLOW_MASTER_PROMPT.txt - промт для нейросети
+
+================================================================================
+
+## 6. AUDIT RESULTS (2026-02-28)
+
+### ✅ CORRECT:
+1. AR mask rendering (din_mask_painter.dart) - точно соответствует SVG
+2. geometry_calculator.py - правильно использует 10mm для калибровки
+3. Database schema - 147 замков с правильными полями
+4. API endpoints - работают корректно
+5. Backend - работает на порту 8001
+6. Flutter web - работает на порту 8083
+
+### ⚠️ ISSUES FOUND:
+
+| Priority | File | Issue | Line |
+|----------|------|-------|------|
+| HIGH | lock_pipeline.py | calculate_scale_factor использует max(w,h) вместо правильной ширины | 70-73 |
+| MEDIUM | train_yolo.py | default model yolov8n.pt вместо yolov8n-obb.pt | 116 |
+| MEDIUM | lock_dataset.yaml | отсутствует obb: true | - |
+
+### Issue Details:
+
+1. **lock_pipeline.py:73** - CRITICAL BUG
+```python
+# ТЕКУЩЕЕ (НЕПРАВИЛЬНО):
+def calculate_scale_factor(self, marker_bbox):
+    _, _, marker_w, marker_h = marker_bbox
+    marker_size_px = max(marker_w, marker_h)  # <-- ОШИБКА!
+    return marker_size_px / self.DIN_CYLINDER_WIDTH  # 10.0
+```
+ПРОБЛЕМА: Если bounding box = 33x17px, max() вернёт 33, а не 10!
+НУЖНО: Использовать именно ширину слота (10mm), а не весь bounding box.
+
+2. **train_yolo.py:116** - Нужен OBB формат
+```python
+# ТЕКУЩЕЕ:
+parser.add_argument("--model", type=str, default="yolov8n.pt",
+# НУЖНО:
+parser.add_argument("--model", type=str, default="yolov8n-obb.pt",
+```
+
+3. **lock_dataset.yaml** - Нужна поддержка OBB
+```yaml
+# НУЖНО ДОБАВИТЬ:
+obb: true
+```
+
+================================================================================
+
+## 7. CURRENT STATUS
+
+| Component | Status |
+|-----------|--------|
+| Backend API | ✅ Working (port 8001) |
+| Flutter Web | ✅ Working (port 8083) |
+| Database | ✅ 147 locks |
+| AR Mask | ✅ Correct geometry |
+| CV Pipeline | ⚠️ Scale factor bug |
+| YOLO Model | ⚠️ Not trained |
+| Tests | ✅ 38 unit tests |
+
+================================================================================
+
+## 8. NEXT STEPS
+
+1. Исправить lock_pipeline.py - calculate_scale_factor
+2. Изменить train_yolo.py на yolov8n-obb.pt
+3. Добавить obb: true в lock_dataset.yaml
+4. Собрать 500+ фото замков
+5. Разметить в Roboflow
+6. Обучить YOLO
+
+================================================================================
+
+## 9. COMMANDS TO RUN
+
+### Backend:
+```bash
+cd backend
+uvicorn app.main:app --host 127.0.0.1 --port 8001
+```
+
+### Flutter Web:
+```bash
+cd mobile_app
+flutter build web
+python3 -m http.server 8083 -d build/web/
+```
+
+### Test API:
+```bash
+curl http://localhost:8001/api/v1/locks?limit=10
+curl http://localhost:8001/health
+```
+
+### YOLO Training (after fixes):
+```bash
+cd cv_pipeline
+python train_yolo.py --epochs 100
+```
+
+================================================================================
+
+## 10. CONSTANTS FROM CODE
+
+```python
+# lock_pipeline.py
+DIN_CYLINDER_WIDTH = 10.0   # mm (slot width!)
+DIN_CYLINDER_HEIGHT = 17.0  # mm
+
+# geometry_calculator.py  
+DIN_CYLINDER_WIDTH = 10.0   # mm
+DIN_CYLINDER_HEIGHT = 17.0  # mm
+
+# AR mask (din_mask_painter.dart)
+maskWidthPx = 60.0
+maskHeightPx = 120.0
+# Scale: 33mm height = h pixels
+# Scale: 17mm width = w pixels
+```
+
+================================================================================
+
+## 11. KEY INSIGHT FOR KIMI
+
+Самый важный момент для понимания проекта:
+
+**Euro cylinder hole (класс 1) - это одновременно:**
+1. Объект для детекции YOLO
+2. Эталон масштаба для КАЛИБРОВки
+
+**Калибровка работает так:**
+1. YOLO находит отверстие цилиндра на изображении
+2. Мы измеряем ширину СЛОТА (10mm) в пикселях
+3. pixels_per_mm = slot_width_px / 10.0
+4. Все остальные измерения умножаются на этот коэффициент
+
+**Поэтому точность зависит от правильного определения именно 10mm слота!**
+
+================================================================================
+
+## 12. REFERENCE FILES
+
+- euro_profile_exact.svg: /mask/euro_profile_exact.svg
+- AR mask code: /mobile_app/lib/features/ar_camera/din_mask_painter.dart
+- Scale calculation: /cv_pipeline/src/geometry_calculator.py
+- Training: /cv_pipeline/train_yolo.py
+
+================================================================================
+
+END OF STATUS REPORT
+================================================================================
