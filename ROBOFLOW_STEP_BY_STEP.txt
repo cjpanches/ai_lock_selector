@@ -1,0 +1,183 @@
+================================================================================
+ROBOFLOW STEP-BY-STEP INSTRUCTION GUIDE
+AI Lock Selector Project
+================================================================================
+
+This guide explains how to use the project documentation in Roboflow
+for training YOLO model to detect door lock components.
+
+================================================================================
+STEP 1: PREPARE YOUR ACCOUNT AND PROJECT
+================================================================================
+
+1. Go to https://roboflow.com
+2. Sign up / Log in
+3. Click "Create New Project"
+4. Project Name: ai-lock-selector
+5. Project Type: Object Detection
+6. Click "Create Project"
+
+================================================================================
+STEP 2: CREATE CLASSES (Copy from instructions)
+================================================================================
+
+In your project, go to "Classes" tab and create these 4 classes:
+
+Class 1: lock_plate
+-------------------
+Description: Металлическая планка (лицевая пластина) замка
+What to label: Draw rectangle/polygon around entire visible lock plate
+Typical size: Width 3-8mm, Height 150-280mm
+
+Class 2: cylinder_hole
+----------------------
+Description: Отверстие под евроцилиндр (Euro cylinder hole)
+What to label: Draw polygon around the ENTIRE 33x17mm Euro cylinder silhouette
+IMPORTANT: This is the SCALE CALIBRATION REFERENCE!
+Exact geometry:
+- Total height: 33mm
+- Top circle: 17mm diameter (radius 8.5mm)
+- Slot width: 10mm (CRITICAL - used for calibration!)
+- Bottom semicircle: 10mm diameter (radius 5mm)
+Shape: Like figure-8 but with flat middle (slot)
+
+Class 3: mounting_hole
+---------------------
+Description: Крепёжные отверстия для винтов
+What to label: Draw circle/ellipse around each mounting hole
+Typically: 2 holes, vertically aligned
+Size: 6-12mm diameter
+
+Class 4: handle_square
+-----------------------
+Description: Квадратное отверстие для дверной ручки
+What to label: Draw rectangle around square hole
+Size: Usually 8x8mm, 9x9mm, or 10x10mm
+
+================================================================================
+STEP 3: UPLOAD IMAGES
+================================================================================
+
+1. Go to "Upload" tab in Roboflow
+2. Upload images from: "photo for aducation/" folder
+3. Or drag & drop all images
+4. Wait for upload to complete
+
+IMPORTANT: You need 500+ images for good accuracy!
+The folder has 934 images - that's perfect!
+
+================================================================================
+STEP 4: LABEL IMAGES
+================================================================================
+
+1. Click on an image to start labeling
+2. Select the correct class from the right panel
+3. Draw bounding box / polygon around the object
+4. For cylinder_hole: Draw around the ENTIRE shape (33x17mm)
+5. Use "Auto Label" feature if available for faster processing
+
+LABELING TIPS:
+- Always label the ENTIRE cylinder_hole (not just the slot!)
+- Label ALL visible mounting holes (usually 2)
+- Label lock_plate as the entire metal plate
+- Be consistent - same object = same label
+
+================================================================================
+STEP 5: CONFIGURE EXPORT (CRITICAL!)
+================================================================================
+
+1. Go to "Version" tab
+2. Click "Export" button
+3. Select format: YOLOv8 Oriented Bounding Box (OBB)
+   - This is important for rotated locks!
+4. Check "Include" for all 4 classes
+5. Click "Continue"
+6. Download the ZIP file
+
+================================================================================
+STEP 6: EXTRACT AND USE DATASET
+================================================================================
+
+1. Extract the ZIP file
+2. Copy contents to: cv_pipeline/dataset/
+3. Structure should be:
+   dataset/
+   ├── images/
+   │   ├── train/
+   │   └── val/
+   ├── labels/
+   │   ├── train/
+   │   └── val/
+   └── data.yaml (or roboflow data.yaml)
+
+4. Make sure data.yaml has correct paths:
+   path: ./dataset
+   train: images/train
+   val: images/val
+   obb: true
+
+================================================================================
+STEP 7: TRAIN YOLO MODEL
+================================================================================
+
+1. Open terminal in project folder
+2. Run:
+   cd cv_pipeline
+   python train_yolo.py --epochs 100
+
+3. Wait for training to complete
+4. Model will be saved to: runs/detect/lock_train/weights/best.pt
+
+================================================================================
+KEY REFERENCE: EURO CYLINDER DIMENSIONS
+================================================================================
+
+This is the MOST IMPORTANT object - used for calibration!
+
+SVG Source: mask/euro_profile_exact.svg
+
+Exact dimensions:
+- Total height: 33mm
+- Top circle: 17mm diameter (r=8.5mm)
+- Slot width: 10mm <-- CALIBRATION REFERENCE
+- Bottom semicircle: 10mm diameter (r=5mm)
+
+Calibration formula in code:
+  pixels_per_mm = detected_slot_width_pixels / 10.0
+
+Without correct labeling of cylinder_hole,
+ALL measurements will be wrong!
+
+================================================================================
+FILES REFERENCE
+================================================================================
+
+These files contain detailed information:
+- ROBOFLOW_INSTRUCTION.md - Full labeling guide
+- ROBOFLOW_INSTRUCTION.txt - Same as above (plain text)
+- ROBOFLOW_MASTER_PROMPT.txt - Master prompt for AI
+- KIMI_STATUS_REPORT.txt - Project status
+
+GitHub: https://github.com/cjpanches/ai_lock_selector
+Branch: develop
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Q: Why is cylinder_hole so important?
+A: Because it's used for SCALE CALIBRATION. Without it,
+   we can't convert pixels to millimeters accurately.
+
+Q: What if images are rotated?
+A: Use OBB (Oriented Bounding Box) format in Roboflow!
+
+Q: How many images do I need?
+A: Minimum 500+ for good accuracy. You have 934 - perfect!
+
+Q: What accuracy can I expect?
+A: Target is ±0.5-1.0mm with proper calibration.
+
+================================================================================
+END OF INSTRUCTION GUIDE
+================================================================================
