@@ -113,8 +113,8 @@ def main():
     parser = argparse.ArgumentParser(description="Train YOLO model for lock detection")
     parser.add_argument("--data", type=str, default="dataset/lock_dataset.yaml",
                         help="Path to dataset YAML")
-    parser.add_argument("--model", type=str, default="yolov8n.pt",
-                        help="Model name (yolov8n.pt, yolov8s.pt, etc.)")
+    parser.add_argument("--model", type=str, default="yolov8n-obb.pt",
+                        help="YOLO OBB model for oriented bounding boxes")
     parser.add_argument("--epochs", type=int, default=100,
                         help="Number of epochs")
     parser.add_argument("--imgsz", type=int, default=640,

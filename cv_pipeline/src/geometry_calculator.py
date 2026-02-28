@@ -5,7 +5,8 @@ from typing import Optional, Tuple, List
 
 class GeometryCalculator:
     DIN_CYLINDER_WIDTH = 10.0
-    DIN_CYLINDER_HEIGHT = 17.0
+    DIN_CYLINDER_HEIGHT = 33.0
+    DIN_TOP_DIAMETER = 17.0
     BACKSET_TOLERANCE = 2.0
     CENTER_DISTANCE_TOLERANCE = 3.0
 
@@ -116,6 +117,9 @@ class LockMeasurementResult:
 
 
 class MeasurementPipeline:
+    MIN_SCALE_FACTOR = 5.0
+    MAX_SCALE_FACTOR = 50.0
+    
     def __init__(self, din_marker_width_mm: float = 10.0):
         self.din_marker_width_mm = din_marker_width_mm
 
@@ -125,8 +129,18 @@ class MeasurementPipeline:
         marker_bounding_box: Tuple[int, int, int, int]
     ) -> dict:
         marker_x, marker_y, marker_w, marker_h = marker_bounding_box
-
-        scale_factor = marker_w / self.din_marker_width_mm
+        
+        slot_width_px = min(marker_w, marker_h)
+        full_height_px = max(marker_w, marker_h)
+        
+        aspect = full_height_px / slot_width_px
+        if not (1.5 <= aspect <= 4.0):
+            raise ValueError(f"Invalid cylinder aspect ratio: {aspect:.2f}")
+        
+        scale_factor = slot_width_px / self.din_marker_width_mm
+        
+        if not (self.MIN_SCALE_FACTOR <= scale_factor <= self.MAX_SCALE_FACTOR):
+            raise ValueError(f"Unrealistic scale factor: {scale_factor:.2f}")
 
         from contour_analyzer import ContourAnalyzer
         from edge_detector import EdgeDetector

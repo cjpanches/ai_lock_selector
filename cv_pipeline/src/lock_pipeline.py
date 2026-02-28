@@ -27,7 +27,8 @@ class LockFeatures:
 
 class LockContourPipeline:
     DIN_CYLINDER_WIDTH = 10.0
-    DIN_CYLINDER_HEIGHT = 17.0
+    DIN_CYLINDER_HEIGHT = 33.0
+    DIN_TOP_DIAMETER = 17.0
     
     PLATE_MIN_HEIGHT_MM = 200
     PLATE_MAX_HEIGHT_MM = 400
@@ -36,6 +37,10 @@ class LockContourPipeline:
     
     MOUNTING_HOLE_DIAMETER_MM = (4.0, 7.0)
     HANDLE_SQUARE_SIZE_MM = (7.0, 10.0)
+    
+    MIN_SCALE_FACTOR = 5.0
+    MAX_SCALE_FACTOR = 50.0
+    VALID_ASPECT_RATIO_RANGE = (1.5, 4.0)
 
     def __init__(self):
         self.scale_factor: float = 0.0
@@ -67,10 +72,65 @@ class LockContourPipeline:
         
         return None
 
-    def calculate_scale_factor(self, marker_bbox: Tuple[int, int, int, int]) -> float:
-        _, _, marker_w, marker_h = marker_bbox
-        marker_size_px = max(marker_w, marker_h)
-        return marker_size_px / self.DIN_CYLINDER_WIDTH
+    def calculate_scale_factor(self, marker_bbox: Tuple[int, int, int, int], mask_roi: Optional[np.ndarray] = None) -> float:
+        """
+        Calculate scale factor using the 10mm slot width of Euro cylinder.
+        
+        Args:
+            marker_bbox: YOLO detection bbox (x, y, w, h) or OBB (x,y,w,h,angle)
+            mask_roi: Optional binary mask of detected cylinder for precise measurement
+        
+        Returns:
+            float: pixels_per_mm scale factor
+        
+        Raises:
+            ValueError: If detection is invalid or scale cannot be calculated
+        """
+        if len(marker_bbox) == 5:
+            x, y, w, h, angle = marker_bbox
+        else:
+            x, y, w, h = marker_bbox
+        
+        if w <= 0 or h <= 0:
+            raise ValueError(f"Invalid bbox dimensions: w={w}, h={h}")
+        
+        slot_width_px = min(w, h)
+        full_height_px = max(w, h)
+        
+        aspect = full_height_px / slot_width_px if slot_width_px > 0 else 0
+        
+        if not (self.VALID_ASPECT_RATIO_RANGE[0] <= aspect <= self.VALID_ASPECT_RATIO_RANGE[1]):
+            raise ValueError(f"Invalid cylinder aspect ratio: {aspect:.2f}, expected {self.VALID_ASPECT_RATIO_RANGE}")
+        
+        scale_factor = slot_width_px / self.DIN_CYLINDER_WIDTH
+        
+        if not (self.MIN_SCALE_FACTOR <= scale_factor <= self.MAX_SCALE_FACTOR):
+            raise ValueError(f"Unrealistic scale factor: {scale_factor:.2f} px/mm, expected {self.MIN_SCALE_FACTOR}-{self.MAX_SCALE_FACTOR}")
+        
+        return scale_factor
+    
+    def _calculate_scale_from_mask(self, mask_roi: np.ndarray) -> float:
+        """
+        Precise measurement of slot width from binary mask.
+        Measures width at multiple heights and takes minimum (narrowest point = slot).
+        """
+        h, w = mask_roi.shape[:2]
+        
+        widths = []
+        center_region = mask_roi[int(h*0.3):int(h*0.7), :]
+        
+        for y in range(center_region.shape[0]):
+            row = center_region[y, :]
+            white_pixels = np.where(row > 127)[0]
+            if len(white_pixels) > 0:
+                width = white_pixels[-1] - white_pixels[0]
+                widths.append(width)
+        
+        if not widths:
+            raise ValueError("Cannot measure width from mask")
+        
+        slot_width_px = min(widths)
+        return slot_width_px / self.DIN_CYLINDER_WIDTH
 
     def preprocess_image(self, image: np.ndarray) -> np.ndarray:
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

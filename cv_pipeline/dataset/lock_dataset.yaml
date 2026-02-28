@@ -1,9 +1,14 @@
 # YOLO Dataset Configuration
 # AI Lock Selector
+# Format: YOLOv8 OBB (Oriented Bounding Boxes)
 
-path: ../cv_pipeline/dataset
+path: ./dataset
 train: images/train
 val: images/val
+test: images/test
+
+# OBB mode
+obb: true
 
 nc: 4
 names:
