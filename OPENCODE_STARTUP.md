@@ -1,7 +1,7 @@
 # ================================================================================
 # 🚀 OPENCODE STARTUP PROMPT - AI LOCK SELECTOR
 # ================================================================================
-# Версия: 4.0.0 | Дата: 2026-02-23
+# Версия: 4.3.0 | Дата: 2026-02-28
 # ================================================================================
 
 """
@@ -9,96 +9,64 @@
 
 ## ОСНОВНЫЕ ФАЙЛЫ:
 1. STARTUP.md - стартовые инструкции
-2. PROJECT_STATE.md - текущее состояние (v4.0.0)
-3. OPENCODE_MASTER_PROMPT.txt - мастер промт
+2. PROJECT_STATE.md - текущее состояние (v4.3.0)
+3. AI_EXPERTS/MASTER_ANALYSIS_v3.md - мастер анализ
 
 ## СТРУКТУРА ПРОЕКТА:
 - mobile_app/ - Flutter приложение (Riverpod + GoRouter)
-- backend/ - FastAPI сервер (PostgreSQL/SQLite)
+- backend/ - FastAPI сервер (SQLite)
 - cv_pipeline/ - Computer Vision (OpenCV + YOLO)
-- datafordb/ - Данные для БД (147 замков)
+- AI_EXPERTS/ - Аудиты экспертов
 
-## ТЕКУЩЕЕ СОСТОЯНИЕ:
+## ТЕКУЩЕЕ СОСТОЯНИЕ (v4.3):
 
-### Оценки экспертов (v4.0):
+### Оценки экспертов:
 | Эксперт | Оценка |
 |---------|--------|
-| KIMI (Architecture) | 5.5/10 |
+| KIMI (Architecture) | 5.8/10 |
 | GROK (Code Analysis) | 5.8/10 |
-| GEMINI (ML/CV) | 4/10 |
 | GPT (Code Generation) | 5.5/10 |
-| **MASTER** | **5.2/10** |
+| GEMINI (ML/CV) | 5.5/10 |
+| **MASTER** | **5.6/10** |
 
 ### Компоненты:
 | Компонент | Оценка | Статус |
 |-----------|--------|--------|
-| Mobile App | 6.1/10 | ⚠️ Router import missing |
-| Backend | 5.4/10 | 🔴 API crash |
-| CV Pipeline | 5.4/10 | 🔴 Broken |
-| Tests | 3/10 | ❌ Low |
+| Mobile App | 6.5/10 | ✅ Работает (кнопка фото исправлена) |
+| Backend | 6.2/10 | ✅ Работает |
+| CV Pipeline | 5.5/10 | ✅ Готов к пре-разметке |
+| YOLO Dataset | 4.0/10 | ⚠️ Нужны фото |
+| Tests | 6/10 | ✅ 38 тестов |
 
-## КРИТИЧЕСКИЕ БАГИ (P0):
+## ЧТО РАБОТАЕТ:
+- ✅ Backend на localhost:8001 (147 замков)
+- ✅ Flutter Web на localhost:8080
+- ✅ AR Camera с DIN маской
+- ✅ Кнопка фото (tap = normal, long press = force)
+- ✅ API: /api/v1/locks, /api/v1/match, /api/v1/measure
+- ✅ pre_label.py - пре-разметка для YOLO
+- ✅ 38 unit тестов
 
-1. 🔴 API matching crash - missing `db` parameter
-   - backend/app/api/matching.py:14
-   - backend/app/api/measurements.py:38
+## ЧТО НУЖНО СДЕЛАТЬ:
+1. Собрать 500+ фото замков (правильный ракурс сверху)
+2. Разметить в Roboflow
+3. Обучить YOLO
 
-2. 🔴 Router import missing - HomeScreen not imported
-   - mobile_app/lib/core/router.dart:3
+## КЛЮЧЕВЫЕ ФАЙЛЫ:
+- mobile_app/lib/providers/capture_provider.dart - кнопка фото
+- mobile_app/lib/features/ar_camera/ar_camera_screen.dart - AR экран
+- cv_pipeline/pre_label.py - пре-разметка
+- cv_pipeline/train_yolo.py - обучение
+- cv_pipeline/dataset/ - структура датасета
 
-3. 🔴 Division by zero - scale_factor validation missing
-   - cv_pipeline/src/lock_pipeline.py:136
+## ЗАПУСК:
+Backend: cd backend && uvicorn app.main:app --port 8001
+Flutter: cd mobile_app && flutter run
 
-4. 🔴 GeometryCalculator broken - stub values
-   - cv_pipeline/src/geometry_calculator.py:54 (returns 3.0)
-   - cv_pipeline/src/geometry_calculator.py:158 (center_distance = backset)
-
-## ПЛАН РАЗВИТИЯ
-
-### P0 (Критический - Немедленно):
-1. Исправить API matching (добавить db parameter)
-2. Исправить Router import (добавить HomeScreen)
-3. Исправить division by zero (scale_factor validation)
-4. Исправить GeometryCalculator (реализовать расчёт)
-
-### P1 (Высокий - Следующий спринт):
-5. Исправить CORS security
-6. Убрать mock данные из measurement_service
-7. Добавить тесты
-
-### P2 (Средний - Квартал):
-8. Обучить YOLO модель (500+ фото)
-9. Рефакторинг кода
-10. Улучшить архитектуру
-
-## КЛЮЧЕВЫЕ КОНСТАНТЫ
-
-### Маска отверстия под цилиндр:
-- EURO_CYLINDER_HOLE = "33x17" mm (DIN)
-
-### Допуски (требуют улучшения):
-- BACKSET_TOLERANCE = ±2.0 mm (цель: ±1.5mm)
-- CENTER_DISTANCE_TOLERANCE = ±3.0 mm (цель: ±1.5mm)
-
-## КОМАНДЫ ЗАПУСКА:
-Backend: cd /home/bot/porojects/ai_lock_project/backend && uvicorn app.main:app --reload
-Flutter: cd /home/bot/porojects/ai_lock_project/mobile_app && flutter run
-Тесты: cd /home/bot/porojects/ai_lock_project/backend && pytest
-
-## ФАЙЛЫ ЭКСПЕРТОВ:
-- KIMI: AI_EXPERTS/EXPERTS/KIMI/output.md
-- GROK: AI_EXPERTS/EXPERTS/GROK/output.md
-- GPT: AI_EXPERTS/EXPERTS/GPT/output.md
-- GEMINI: AI_EXPERTS/EXPERTS/GEMINI/output.md
-
-## СЛЕДУЮЩАЯ ЗАДАЧА:
-Исправить критические баги P0 (API matching, Router import)
-
-Проект: AI Lock Selector
-Ветка: develop
-Оценка: 5.2/10 (требует критических исправлений)
+## ЭКСПЕРТЫ:
+KIMI - Architecture
+GROK - Code Analysis  
+GPT - Code Generation
+GEMINI - ML/CV
+MASTER - Consensus
 """
-
-# ================================================================================
-# END OF STARTUP PROMPT
-# ================================================================================

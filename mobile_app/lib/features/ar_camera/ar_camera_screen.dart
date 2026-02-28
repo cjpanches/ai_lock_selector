@@ -68,8 +68,8 @@ class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBin
     maskNotifier.updateScale(details.scale);
   }
 
-  Future<void> _captureFrame() async {
-    final captureContext = await ref.read(captureProvider.notifier).captureImage(context);
+  Future<void> _captureFrame({bool forceCapture = false}) async {
+    final captureContext = await ref.read(captureProvider.notifier).captureImage(context, forceCapture: forceCapture);
     if (captureContext != null) {
       setState(() => _showSuccessAnimation = true);
       await Future.delayed(const Duration(milliseconds: 500));
@@ -241,7 +241,7 @@ class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBin
             child: Text(
               isAligned
                   ? 'Нажмите для захвата'
-                  : 'Перетащите маску на отверстие цилиндра',
+                  : 'Перетащите маску или удерживайте для принудительного снимка',
               key: ValueKey(isAligned),
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white70, fontSize: 14),
@@ -249,7 +249,8 @@ class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBin
           ),
           const SizedBox(height: 24),
           GestureDetector(
-            onTap: isCapturing ? null : _captureFrame,
+            onTap: isCapturing ? null : () => _captureFrame(forceCapture: false),
+            onLongPress: isCapturing ? null : () => _captureFrame(forceCapture: true),
             child: AnimatedBuilder(
               animation: _animationController,
               builder: (context, child) {
@@ -279,17 +280,10 @@ class _ARCameraScreenState extends ConsumerState<ARCameraScreen> with WidgetsBin
             ),
           ),
           const SizedBox(height: 16),
-          if (!isAligned)
-            Text(
-              'Совместите маску с отверстием и нажмите кнопку',
-              style: TextStyle(
-                color: Colors.orange.withOpacity(0.8),
-                fontSize: 12,
-              ),
-            ),
         ],
       ),
     );
   }
+}
 }
 

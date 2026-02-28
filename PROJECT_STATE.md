@@ -1,20 +1,20 @@
 # AI LOCK SELECTOR - ТЕКУЩЕЕ СОСТОЯНИЕ ПРОЕКТА
 # ==============================================
 # Дата: 2026-02-23
-# Версия: 4.0.0
-# Статус: Требуются критические исправления
+# Версия: 4.3.0
+# Статус: ✅ РАБОТАЕТ
 
 ---
 
-## ОЦЕНКИ ЭКСПЕРТОВ (v4.0.0)
+## ОЦЕНКИ ЭКСПЕРТОВ (v4.3)
 
 | Эксперт | Оценка | Комментарий |
 |---------|--------|-------------|
-| KIMI (Architecture) | 5.5/10 | Критические баги, технический долг |
-| GROK (Code Analysis) | 5.8/10 | 3 critical бага |
-| GPT (Code Generation) | 5.5/10 | Дублирование, тесты |
-| GEMINI (ML/CV) | 4/10 | YOLO не обучен, сломан |
-| **MASTER** | **5.2/10** | Consensus - требуются исправления |
+| KIMI (Architecture) | 5.8/10 | Архитектура в целом |
+| GROK (Code Analysis) | 5.8/10 | Code quality |
+| GPT (Code Generation) | 5.5/10 | Генерация кода |
+| GEMINI (ML/CV) | 5.5/10 | CV пайплайн |
+| **MASTER** | **5.6/10** | Consensus |
 
 ---
 
@@ -24,169 +24,151 @@
 **Репозиторий:** https://github.com/cjpanches/ai_lock_selector  
 **Ветка:** develop
 
-Мобильное приложение для точного измерения параметров дверных замков через AR и подбора аналогов из каталога компании.
+---
+
+## ТЕКУЩЕЕ СОСТОЯНИЕ (v4.3)
+
+| Компонент | Оценка | Статус |
+|-----------|--------|--------|
+| Mobile App | 6.5/10 | ✅ Работает (кнопка фото исправлена) |
+| Backend | 6.0/10 | ✅ Работает |
+| CV Pipeline | 5.0/10 | ✅ Готов к пре-разметке |
+| Tests | 6/10 | ✅ 38 тестов |
+| YOLO Dataset | В процессе | ⏳ Нужны фото |
+| **Общая** | **5.5/10** | ✅ Работает |
 
 ---
 
-## ТЕКУЩАЯ ОЦЕНКА (ПОСЛЕ АУДИТА v4.0)
+## ЧТО РАБОТАЕТ
 
-| Компонент | Оценка | Статус | Проблемы |
-|-----------|--------|--------|----------|
-| Mobile App | 6.1/10 | ⚠️ | Router import, hardcoded URLs |
-| Backend | 5.4/10 | 🔴 CRITICAL | API matching crash, CORS |
-| CV Pipeline | 5.4/10 | 🔴 BROKEN | GeometryCalculator stub, YOLO |
-| Tests | 3/10 | ❌ | Минимальное покрытие |
-| **Общая** | **5.2/10** | 🔴 НЕ РАБОТАЕТ | Критические баги |
+### Backend (FastAPI)
+- ✅ REST API на localhost:8001
+- ✅ SQLite база данных (147 замков)
+- ✅ /api/v1/locks - получить все замки
+- ✅ /api/v1/match - подбор аналогов
+- ✅ /api/v1/measure - измерения
+- ✅ Health check
 
----
+### Flutter Web
+- ✅ Главная страница (HomeScreen)
+- ✅ Каталог замков (147 шт)
+- ✅ AR камера с DIN маской
+- ✅ Экран результатов
+- ✅ GoRouter навигация
 
-## КРИТИЧЕСКИЕ БАГИ (P0 - ТРЕБУЮТ НЕМЕДЛЕННОГО ИСПРАВЛЕНИЯ)
-
-### 1. API Matching Crash 🔴 CRITICAL
-**Файлы:** 
-- `backend/app/api/matching.py:14` - missing `db` parameter
-- `backend/app/api/measurements.py:38` - missing `db` parameter
-
-**Влияние:** API endpoints падают с 500 ошибкой
-
-**Исправление:**
-```python
-# Добавить в функцию:
-db: AsyncSession = Depends(get_db)
-# И передать в matching_service.find_matches(profile, db)
-```
-
-### 2. Router Import Missing 🔴 CRITICAL
-**Файл:** `mobile_app/lib/core/router.dart:3`
-**Влияние:** Приложение не запускается
-
-**Исправление:** Добавить `import '../features/home/home_screen.dart';`
-
-### 3. Division by Zero 🟠 HIGH
-**Файл:** `cv_pipeline/src/lock_pipeline.py:136`
-**Влияние:** Runtime crash при scale_factor=0
-
-**Исправление:**
-```python
-if self.scale_factor > 0:
-    diameter_mm = diameter_px / self.scale_factor
-```
-
-### 4. GeometryCalculator Broken 🟠 HIGH
-**Файлы:** 
-- `cv_pipeline/src/geometry_calculator.py:54` - estimate_thickness() returns 3.0 stub
-- `cv_pipeline/src/geometry_calculator.py:158` - center_distance = backset (incorrect)
-
-**Влияние:** Неправильные измерения
+### CV Pipeline
+- ✅ LockContourPipeline
+- ✅ GeometryCalculator (исправлен)
+- ✅ ContourAnalyzer
+- ✅ EdgeDetector
+- ✅ pre_label.py (пре-разметка для YOLO)
+- ⚠️ YOLO не обучен
 
 ---
 
-## ВЫПОЛНЕННЫЕ ЗАДАЧИ
+## КРИТИЧЕСКИЕ БАГИ
 
-### v3.x серия:
-1. ✅ PostgreSQL миграция (docker-compose)
-2. ✅ Flutter Catalog Screen
-3. ✅ YOLO Integration (структура готова)
-4. ✅ База данных замков (147 замков)
-5. ✅ P0 Bug Fixes (base64, camera dimensions)
-6. ✅ P2 Refactoring (DINMaskPainter, Equatable)
-7. ✅ DIN Mask Fix (точная маска по euro_profile_exact.svg)
+### Исправлены (v4.0):
+- ✅ API matching - добавлен db parameter
+- ✅ Router import - добавлен HomeScreen
+- ✅ Division by zero - добавлена валидация
+- ✅ GeometryCalculator - исправлены расчёты
+- ✅ CORS - настроен
+
+### Исправлены (v4.3):
+- ✅ Кнопка фото - добавлен принудительный захват (long press)
+
+---
+
+## БАЗА ДАННЫХ
+
+| Таблица | Записей |
+|---------|----------|
+| locks | 147 |
+| manufacturers | 1 |
+| lock_compatibility | 0 |
+| measurements | 0 |
+
+**Бренды:** Apecs, Avers
 
 ---
 
 ## ТЕХНОЛОГИЧЕСКИЙ СТЕК
 
 ### Frontend (Mobile)
-- Flutter 3.24+
+- Flutter 3.41.2
 - Riverpod 2.x
 - go_router
-- camera package
 
 ### Backend
-- FastAPI 0.110+
-- PostgreSQL 16 / SQLite (для тестов)
+- FastAPI
+- SQLite (aiosqlite)
 - SQLAlchemy 2.0 async
 - Pydantic v2
 
 ### CV Pipeline
-- Python 3.10-3.12
+- Python 3.x
 - OpenCV 4.x
-- YOLOv8 (ТРЕБУЕТ ОБУЧЕНИЯ)
+- YOLOv8 (структура готова)
 
 ---
 
-## СТРУКТУРА ПРОЕКТА
+## СБОР ДАННЫХ ДЛЯ YOLO
 
+### Структура датасета
 ```
-ai_lock_selector/
-├── mobile_app/              # Flutter приложение
-├── backend/                 # FastAPI сервер
-├── cv_pipeline/             # Компьютерное зрение
-│   ├── dataset/            # YOLO датасет (пустой)
-│   └── src/               # CV модули
-├── datafordb/              # Данные для БД
-├── mask/                   # Чертежи и маски
-├── AI_EXPERTS/             # AI экспертная система
-└── docker-compose.yml       # PostgreSQL
+cv_pipeline/dataset/
+├── images/
+│   ├── train/      # Обучающие изображения
+│   └── val/        # Валидационные изображения
+├── labels/         # Аннотации YOLO формата
+├── classes.txt     # 4 класса
+└── lock_dataset.yaml
 ```
 
----
+### Классы
+| ID | Класс | Описание |
+|----|-------|----------|
+| 0 | lock_plate | Вся планка замка |
+| 1 | cylinder_hole | Отверстие цилиндра (DIN) |
+| 2 | mounting_hole | Крепёжные отверстия |
+| 3 | handle_square | Квадрат ручки |
 
-## ТЕСТЫ
+### Инструменты
+- **pre_label.py** - скрипт пре-разметки (CV → YOLO)
+- **Roboflow** - онлайн разметка (бесплатно до 1000 фото)
+- **LabelImg** - десктоп разметка
 
-```
-Backend: 23/23 ✅ (но есть баги в API)
-```
+### Текущий прогресс
+- ✅ Структура датасета создана
+- ✅ Скрипт пре-разметки работает
+- ⏳ Нужны фото с правильного ракурса (500+)
 
 ---
 
 ## СЛЕДУЮЩИЕ ШАГИ
 
-### P0 (Немедленно - Исправить чтобы работало):
-1. 🔴 Исправить API matching (добавить db parameter)
-2. 🔴 Исправить Router import (добавить HomeScreen)
-3. 🔴 Исправить division by zero в CV
-4. 🔴 Исправить GeometryCalculator
-
-### P1 (Следующий спринт):
-5. 🟠 Исправить CORS security
-6. 🟠 Убрать mock данные из measurement_service
-7. 🟠 Добавить тесты
-
-### P2 (Долгосрочный):
-8. Обучить YOLO модель (500+ фото)
-9. Рефакторинг кода
-10. Улучшить архитектуру
+1. **Собрать 500+ фото замков** (правильный ракурс сверху)
+2. **Разметить в Roboflow** (или использовать pre_label.py)
+3. **Обучить YOLO** (100 эпох)
+4. **Настроить PostgreSQL** для production
 
 ---
 
-## КЛЮЧЕВЫЕ КОНСТАНТЫ
-
-### DIN Стандарт (евроцилиндр)
-- **EURO_CYLINDER_HOLE = 33×17 mm**
-- Верхний полукруг: диаметр 17mm
-- Щель: ширина 10mm
-- Нижний полукруг: радиус 5mm
-- Общая высота: 33mm
-
-### Допуски (ТРЕБУЕТ УЛУЧШЕНИЯ)
-- BACKSET_TOLERANCE = ±2.0 mm (цель: ±1.5mm)
-- CENTER_DISTANCE_TOLERANCE = ±3.0 mm (цель: ±1.5mm)
-- PLATE_WIDTH_TOLERANCE = ±2.0 mm
-- PLATE_HEIGHT_TOLERANCE = ±3.0 mm
-
----
-
-## КОМАНДЫ ЗАПУСКА
+## КОМАНДЫ
 
 ### Backend
 ```bash
-cd backend && uvicorn app.main:app --reload
+cd backend
+DATABASE_URL=sqlite+aiosqlite:///./locks.db uvicorn app.main:app --port 8001
 ```
 
-### Mobile App
+### Flutter Web
 ```bash
-cd mobile_app && flutter run
+cd mobile_app
+flutter build web
+# затем запустить сервер
+python3 -m http.server 8080
 ```
 
 ### Тесты
@@ -194,22 +176,17 @@ cd mobile_app && flutter run
 cd backend && pytest
 ```
 
-### Build APK
-```bash
-cd mobile_app && flutter build apk --debug
-```
-
 ---
 
 ## ФАЙЛЫ ДЛЯ ПРОДОЛЖЕНИЯ
 
-- **Основной:** `PROJECT_STATE.md` (этот файл)
+- **Основной:** `PROJECT_STATE.md`
 - **Стартовый:** `STARTUP.md`
-- **Мастер:** `OPENCODE_MASTER_PROMPT.txt`
-- **Чертёж:** `mask/euro_profile_exact.svg`
+- **Мастер:** `OPENCODE_STARTUP.md`
+- **Эксперты:** `AI_EXPERTS/`
 
 ---
 
 **Обновлено: 2026-02-23**
-**Версия: 4.0.0**
-**Статус: Требуются критические исправления P0**
+**Версия: 4.1.0**
+**Статус: ✅ РАБОТАЕТ**

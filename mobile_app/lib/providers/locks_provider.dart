@@ -2,8 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../domain/models/lock.dart';
+import '../../core/constants.dart';
 
-const String _baseUrl = 'http://10.0.2.2:8000/api/v1';
+const String _baseUrl = '${AppConstants.baseUrl}/api/v1';
 
 class LocksResponse {
   final List<Lock> locks;

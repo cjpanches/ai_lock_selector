@@ -1,12 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants.dart';
 
 const int maxRetries = 3;
 const Duration requestTimeout = Duration(seconds: 10);
 
 final dioProvider = Provider<Dio>((ref) {
   return Dio(BaseOptions(
-    baseUrl: 'http://10.0.2.2:8000/api/v1',
+    baseUrl: '${AppConstants.baseUrl}/api/v1',
     connectTimeout: requestTimeout,
     receiveTimeout: requestTimeout,
   ));

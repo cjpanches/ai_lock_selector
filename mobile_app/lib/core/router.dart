@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/models/capture_context.dart';
-import '../features/home/home_screen.dart';
 import '../features/ar_camera/ar_camera_screen.dart';
 import '../features/measurement/measurement_result_screen.dart';
 import '../features/catalog/catalog_screen.dart';

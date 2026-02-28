@@ -1,14 +1,13 @@
 # YOLO Dataset Configuration
 # AI Lock Selector
 
-path: dataset
+path: ../cv_pipeline/dataset
 train: images/train
 val: images/val
 
-nc: 5
+nc: 4
 names:
   0: lock_plate
   1: cylinder_hole
   2: mounting_hole
   3: handle_square
-  4: din_marker

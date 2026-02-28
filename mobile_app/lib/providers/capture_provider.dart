@@ -45,7 +45,7 @@ class CaptureNotifier extends StateNotifier<CaptureState> {
 
   CaptureNotifier(this._ref) : super(const CaptureState());
 
-  Future<CaptureContext?> captureImage(BuildContext context) async {
+  Future<CaptureContext?> captureImage(BuildContext context, {bool forceCapture = false}) async {
     final cameraState = _ref.read(cameraControllerProvider);
     final maskState = _ref.read(maskProvider);
 
@@ -54,7 +54,7 @@ class CaptureNotifier extends StateNotifier<CaptureState> {
       return null;
     }
 
-    if (!maskState.isAligned) {
+    if (!forceCapture && !maskState.isAligned) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Пожалуйста, совместите маску с отверстием цилиндра')),
       );

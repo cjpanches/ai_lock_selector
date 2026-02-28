@@ -61,3 +61,20 @@ class TestLockDTO:
         assert dto.vendor_code == "A-001"
         assert dto.backset == 55.0
         assert dto.type == "embedded"
+
+
+class TestMatchingAlgorithm:
+    def test_tolerance_values(self):
+        assert TOLERANCES["backset"] == 2.0
+        assert TOLERANCES["center_distance"] == 3.0
+        assert TOLERANCES["plate_width"] == 2.0
+        assert TOLERANCES["plate_height"] == 3.0
+    
+    def test_weights_values(self):
+        assert WEIGHTS["backset"] > WEIGHTS["plate_height"]
+        assert WEIGHTS["center_distance"] > 0.1
+        assert sum(WEIGHTS.values()) == 1.0
+    
+    def test_weights_sum(self):
+        total = sum(WEIGHTS.values())
+        assert abs(total - 1.0) < 0.01

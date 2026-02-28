@@ -1,7 +1,7 @@
 class AppConstants {
   static const String appName = 'AI Lock Selector';
   static const String appVersion = '1.0.0';
-  static const String baseUrl = 'http://localhost:8000';
+  static const String baseUrl = 'http://localhost:8001';
 
   // DIN Euro Cylinder Hole dimensions (mm) - for CV calibration
   static const double dinCylinderWidth = 10.0;

@@ -67,3 +67,80 @@ class TestContourAnalyzer:
         )
         assert result.area == 100
         assert result.center == (5, 5)
+
+    def test_find_circular_holes(self):
+        from contour_analyzer import ContourAnalyzer, ContourResult
+        
+        analyzer = ContourAnalyzer()
+        
+        circle_contour = ContourResult(
+            points=np.array([]),
+            bounding_box=(0, 0, 20, 20),
+            area=314,
+            perimeter=62.8,
+            center=(10, 10),
+            circularity=0.9,
+            aspect_ratio=1.0
+        )
+        
+        results = analyzer.find_circular_holes([circle_contour], min_diameter_pixels=10, max_diameter_pixels=50)
+        assert len(results) == 1
+
+    def test_find_din_cylinder_hole(self):
+        from contour_analyzer import ContourAnalyzer, ContourResult
+        
+        analyzer = ContourAnalyzer()
+        
+        din_contour = ContourResult(
+            points=np.array([]),
+            bounding_box=(0, 0, 20, 34),
+            area=680,
+            perimeter=108,
+            center=(10, 17),
+            circularity=0.3,
+            aspect_ratio=0.59
+        )
+        
+        scale_factor = 2.0
+        result = analyzer.find_din_cylinder_hole([din_contour], scale_factor, tolerance=0.5)
+        assert result is not None
+
+    def test_find_mounting_holes(self):
+        from contour_analyzer import ContourAnalyzer, ContourResult
+        
+        analyzer = ContourAnalyzer()
+        
+        hole_contour = ContourResult(
+            points=np.array([]),
+            bounding_box=(0, 0, 14, 14),
+            area=150,
+            perimeter=50,
+            center=(7, 7),
+            circularity=0.75,
+            aspect_ratio=1.0
+        )
+        
+        scale_factor = 2.0
+        results = analyzer.find_mounting_holes([hole_contour], scale_factor, expected_count=2)
+        assert len(results) >= 1
+
+
+class TestLockPipeline:
+    def test_lock_features_dataclass(self):
+        sys.path.insert(0, str(Path(__file__).parent.parent.parent / "cv_pipeline" / "src"))
+        from lock_pipeline import LockFeatures
+        
+        features = LockFeatures()
+        assert features.mounting_holes == []
+        
+        features.mounting_holes.append(np.array([[0, 0]]))
+        assert len(features.mounting_holes) == 1
+
+    def test_scale_factor_calculation(self):
+        sys.path.insert(0, str(Path(__file__).parent.parent.parent / "cv_pipeline" / "src"))
+        from lock_pipeline import LockContourPipeline
+        
+        pipeline = LockContourPipeline()
+        marker_bbox = (0, 0, 20, 10)
+        scale = pipeline.calculate_scale_factor(marker_bbox)
+        assert scale == 2.0
