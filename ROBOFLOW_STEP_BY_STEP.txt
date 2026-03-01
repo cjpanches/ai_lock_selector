@@ -41,18 +41,13 @@ Exact geometry:
 - Bottom semicircle: 10mm diameter (radius 5mm)
 Shape: Like figure-8 but with flat middle (slot)
 
-Class 3: mounting_hole
----------------------
-Description: Крепёжные отверстия для винтов
-What to label: Draw circle/ellipse around each mounting hole
-Typically: 2 holes, vertically aligned
-Size: 6-12mm diameter
-
-Class 4: handle_square
+Class 3: handle_square
 -----------------------
 Description: Квадратное отверстие для дверной ручки
 What to label: Draw rectangle around square hole
 Size: Usually 8x8mm, 9x9mm, or 10x10mm
+
+NOTE: This project uses 3 classes (mounting_hole was removed)
 
 ================================================================================
 STEP 3: UPLOAD IMAGES
@@ -90,7 +85,7 @@ STEP 5: CONFIGURE EXPORT (CRITICAL!)
 2. Click "Export" button
 3. Select format: YOLOv8 Oriented Bounding Box (OBB)
    - This is important for rotated locks!
-4. Check "Include" for all 4 classes
+4. Check "Include" for all 3 classes
 5. Click "Continue"
 6. Download the ZIP file
 

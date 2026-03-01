@@ -35,7 +35,7 @@ COMPONENT STATUS:
 - CV Pipeline: Fixed (scale factor bug corrected)
 - AR Mask: Working (correct Euro cylinder geometry)
 - Tests: 38/38 passing
-- Photos Collected: 934 (need processing)
+- Photos Collected: 762 (need processing)
 - YOLO Model: Not trained (need Roboflow)
 
 CRITICAL FIX IN V4.4:
@@ -49,9 +49,9 @@ FILES MODIFIED:
 - cv_pipeline/dataset/lock_dataset.yaml
 
 NEXT STEPS (Priority Order):
-1. Process 934 photos
+1. Process 762 photos
 2. Upload to Roboflow
-3. Label 4 classes
+3. Label 3 classes
 4. Train YOLO
 5. Test accuracy (±0.5-1.0mm target)
 

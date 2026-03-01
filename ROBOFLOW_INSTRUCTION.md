@@ -41,19 +41,7 @@
 
 ---
 
-### Class 2: mounting_hole (Крепёжные отверстия)
-**Description:** Отверстия для крепления замка к двери
-**Visual:** Круглые отверстия (обычно 2 штуки), расположены вертикально
-**Typical sizes:**
-- Diameter: 6-12mm
-- Distance between holes: varies by lock model
-
-**How to label:** Draw ellipse/circle around each mounting hole
-**Important:** Label ALL visible mounting holes (минимум 2)
-
----
-
-### Class 3: handle_square (Квадрат ручки)
+### Class 2: handle_square (Квадрат ручки)
 **Description:** Квадратное отверстие для установки дверной ручки
 **Visual:** Квадратное отверстие, обычно в средней/нижней части замка
 **Standard sizes:**
@@ -120,8 +108,7 @@
 ### What MUST be visible:
 1. Entire lock plate
 2. Cylinder hole (for scale reference!)
-3. At least 2 mounting holes
-4. Handle square hole
+3. Handle square hole
 
 ---
 
@@ -244,7 +231,6 @@ plate_width_mm = width_pixels / pixels_per_mm
   "detected_classes": {
     "lock_plate": [x, y, w, h],
     "cylinder_hole": [x, y, w, h],
-    "mounting_hole": [x, y, w, h],
     "handle_square": [x, y, w, h]
   }
 }

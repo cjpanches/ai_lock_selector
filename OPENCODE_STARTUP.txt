@@ -1,8 +1,8 @@
 ================================================================================
 OPENCODE STARTUP - AI LOCK SELECTOR PROJECT
 ================================================================================
-Version: 4.4.0
-Date: 2026-02-28
+Version: 4.5.0
+Date: 2026-03-01
 Project: /home/bot/porojects/ai_lock_project
 GitHub: https://github.com/cjpanches/ai_lock_selector
 Branch: develop
@@ -27,21 +27,21 @@ backend/             - FastAPI (SQLite, 147 locks)
 cv_pipeline/         - CV + YOLO
 AI_EXPERTS/         - Expert audits
 mask/                - AR mask (euro_profile_exact.svg - SOURCE OF TRUTH)
-photo for aducation/ - 934 photos collected
+datafordb/          - 762 photos for training
 
 ================================================================================
-CURRENT STATUS (v4.4.0)
+CURRENT STATUS (v4.5.0)
 ================================================================================
 
 COMPONENTS:
 - Backend: Working (port 8001)
 - Flutter Web: Working (port 8083)
-- Database: 147 locks
+- Database: 147 locks (100% populated)
 - CV Pipeline: Fixed (scale factor bug corrected)
 - Tests: 38/38 passing
 
 YOLO TRAINING STATUS:
-- Photos: 934 collected (need upload to Roboflow)
+- Photos: 762 collected in datafordb/
 - Model: Not trained yet
 - Need: Label in Roboflow → Export → Train
 
@@ -65,11 +65,11 @@ Calibration formula:
 CRITICAL: Without correct calibration, ALL measurements are wrong!
 
 ================================================================================
-YOLO CLASSES (4 classes)
+YOLO CLASSES (3 classes)
 ================================================================================
 
 Class 0: lock_plate
-- Description: Металлическая планка замка
+- Description: Metallicheskaya planeta zamka
 - Label: Draw around entire visible lock plate
 
 Class 1: cylinder_hole (CRITICAL!)
@@ -77,14 +77,11 @@ Class 1: cylinder_hole (CRITICAL!)
 - Label: Draw around ENTIRE silhouette (not just slot!)
 - This is the SCALE CALIBRATION REFERENCE
 
-Class 2: mounting_hole
-- Description: Крепёжные отверстия (2 штуки)
-- Label: Draw circles around each hole
-- Note: Center distance is cylinder → handle, NOT cylinder → mounting holes!
-
-Class 3: handle_square
-- Description: Квадрат ручки (8x8mm)
+Class 2: handle_square
+- Description: Kvadratruchki (8x8mm)
 - Label: Draw rectangle around square hole
+
+NOTE: mounting_hole REMOVED - not needed for center distance measurement
 
 ================================================================================
 KEY MEASUREMENTS
@@ -107,42 +104,26 @@ Plate dimensions:
 - Height: 150-280mm
 
 ================================================================================
-CRITICAL FIX APPLIED (v4.4)
+DATABASE (147 locks - 100% populated)
 ================================================================================
 
-BUG: scale_factor calculation was WRONG!
-- OLD: max(w,h) / 10.0 → 33mm used instead of 10mm
-- NEW: min(w,h) / 10.0 → correct slot width (10mm)
+All fields now filled:
+- backset: 100%
+- center_distance: 100%
+- plate_width: 100%
+- plate_height: 100%
+- body_width: 100%
+- body_height: 100%
+- square_hole_size: 100%
 
-Files changed:
-- cv_pipeline/src/lock_pipeline.py
-- cv_pipeline/src/geometry_calculator.py
-- cv_pipeline/train_yolo.py
-- cv_pipeline/dataset/lock_dataset.yaml
-
-================================================================================
-DOCUMENTATION FILES
-================================================================================
-
-For Roboflow:
-- ROBOFLOW_INSTRUCTION.md / .txt - Full labeling guide
-- ROBOFLOW_STEP_BY_STEP.txt - Step-by-step guide
-
-For AI/ML:
-- PROJECT_DOCUMENTATION_FOR_AI.md - Full project docs
-- ROBOFLOW_MASTER_PROMPT.txt - Master prompt for AI
-- KIMI_STATUS_REPORT.txt - Status report
-
-Expert reviews:
-- EXPERT_REVIEWS.txt - Expert summaries
-- COMPREHENSIVE_AUDIT_v4.4.md - Full audit
+Filled based on series (Apecs catalog) + defaults
 
 ================================================================================
 NEXT STEPS (Priority Order)
 ================================================================================
 
-1. Upload photos to Roboflow (934 photos in "photo for aducation/")
-2. Create 4 classes: lock_plate, cylinder_hole, mounting_hole, handle_square
+1. Upload photos to Roboflow (762 photos in "datafordb/")
+2. Create 3 classes: lock_plate, cylinder_hole, handle_square
 3. Label all photos
 4. Export as YOLOv8 OBB
 5. Train: cd cv_pipeline && python train_yolo.py --epochs 100
@@ -153,7 +134,7 @@ COMMANDS
 ================================================================================
 
 Start backend:
-cd backend && uvicorn app.main:app --host 127.0.0.1 --port 8001
+cd backend && DATABASE_URL=sqlite+aiosqlite:///./locks.db uvicorn app.main:app --host 127.0.0.1 --port 8001
 
 Start Flutter:
 cd mobile_app && flutter run
@@ -169,7 +150,7 @@ Train YOLO:
 cd cv_pipeline && python train_yolo.py --epochs 100
 
 ================================================================================
-IMPORTANT INSIGHT
+IMPORTANT INSIGHTS
 ================================================================================
 
 The cylinder_hole (class 1) serves TWO purposes:
@@ -180,6 +161,19 @@ Without correct calibration, ALL measurements are wrong!
 
 Center distance = cylinder center → handle square center
 (NOT cylinder → mounting holes!)
+
+Scale factor formula:
+  scale_factor = min(bbox_width, bbox_height) / 10.0
+
+================================================================================
+KEY FILES
+================================================================================
+
+- mask/euro_profile_exact.svg - AR mask (SOURCE OF TRUTH)
+- cv_pipeline/src/lock_pipeline.py - CV pipeline (FIXED scale factor)
+- cv_pipeline/src/geometry_calculator.py - Geometry calculations
+- cv_pipeline/dataset/lock_dataset.yaml - YOLO config (3 classes)
+- backend/app/services/matching_service.py - Matching algorithm
 
 ================================================================================
 END OF STARTUP

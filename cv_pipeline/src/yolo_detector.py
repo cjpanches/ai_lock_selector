@@ -16,9 +16,7 @@ class YOLODetector:
     CLASSES = {
         0: "lock_plate",
         1: "cylinder_hole",
-        2: "mounting_hole",
-        3: "handle_square",
-        4: "din_marker",
+        2: "handle_square",
     }
 
     def __init__(self, model_path: Optional[str] = None, confidence_threshold: float = 0.5):

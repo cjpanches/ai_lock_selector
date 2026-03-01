@@ -10,9 +10,8 @@ test: images/test
 # OBB mode
 obb: true
 
-nc: 4
+nc: 3
 names:
   0: lock_plate
   1: cylinder_hole
-  2: mounting_hole
-  3: handle_square
+  2: handle_square

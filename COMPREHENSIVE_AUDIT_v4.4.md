@@ -207,7 +207,7 @@ ai_lock_project/
 ### Priority 1: YOLO Training
 1. Extract frames from video files in "photo for aducation"
 2. Upload to Roboflow
-3. Label 4 classes (lock_plate, cylinder_hole, mounting_hole, handle_square)
+3. Label 3 classes (lock_plate, cylinder_hole, handle_square)
 4. Export as YOLOv8 OBB
 5. Train model: `python train_yolo.py --epochs 100`
 

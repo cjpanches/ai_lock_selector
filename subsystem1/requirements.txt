@@ -1,5 +1,0 @@
-# Subsystem1 - AI Expert Analysis System
-# Requirements
-
-pytest>=7.0.0
-requests>=2.28.0

@@ -1,100 +1,172 @@
 # ================================================================================
 # 🚀 OPENCODE STARTUP PROMPT - AI LOCK SELECTOR
 # ================================================================================
-# Версия: 4.4.0 | Дата: 2026-02-28
-# =============================================================================
+# Version: 4.5.0 | Date: 2026-03-01
+# ================================================================================
 
-## ОСНОВНЫЕ ФАЙЛЫ:
-1. STARTUP.md - стартовые инструкции
-2. COMPREHENSIVE_AUDIT_v4.4.md - полный аудит (НОВЫЙ!)
-3. OPENCODE_STARTUP.md - этот файл
-4. ROBOFLOW_INSTRUCTION.md - инструкция для Roboflow
+## QUICK START
+Check system status:
+- Backend: curl http://127.0.0.1:8001/health
+- Flutter Web: curl http://localhost:8083
 
-## СТРУКТУРА ПРОЕКТА:
-- mobile_app/ - Flutter приложение (Riverpod + GoRouter)
-- backend/ - FastAPI сервер (SQLite, 147 замков)
-- cv_pipeline/ - Computer Vision (OpenCV + YOLO)
-- AI_EXPERTS/ - Аудиты экспертов
-- mask/ - AR маска (euro_profile_exact.svg - ИСТОЧНИК ИСТИНЫ)
-- photo for aducation/ - 934 фото собрано
+Run tests:
+- cd backend && pytest
 
-## ТЕКУЩЕЕ СОСТОЯНИЕ (v4.4):
+================================================================================
+PROJECT STRUCTURE
+================================================================================
 
-### Оценки экспертов:
-| Эксперт | Оценка |
-|---------|--------|
-| KIMI (Architecture) | 5.8/10 |
-| GROK (Code Analysis) | 5.8/10 |
-| GPT (Code Generation) | 5.5/10 |
-| GEMINI (ML/CV) | 5.5/10 |
-| **MASTER** | **5.6/10** |
+mobile_app/          - Flutter app (Riverpod + GoRouter)
+backend/             - FastAPI (SQLite, 147 locks)
+cv_pipeline/         - CV + YOLO
+AI_EXPERTS/         - Expert audits
+mask/                - AR mask (euro_profile_exact.svg - SOURCE OF TRUTH)
+datafordb/          - 762 photos for training
 
-### Компоненты:
-| Компонент | Оценка | Статус |
-|-----------|--------|--------|
-| Mobile App | 6.5/10 | ✅ Работает |
-| Backend | 6.2/10 | ✅ Работает (port 8001) |
-| CV Pipeline | 6.0/10 | ✅ Исправлен баг калибровки |
-| YOLO Dataset | 5.0/10 | ⚠️ 934 фото, нужна разметка |
-| Tests | 6/10 | ✅ 38/38 тестов |
+================================================================================
+CURRENT STATUS (v4.5.0)
+================================================================================
 
-## ЧТО РАБОТАЕТ:
-- ✅ Backend на localhost:8001 (147 замков)
-- ✅ Flutter Web на localhost:8083
-- ✅ AR Camera с DIN маской (правильная геометрия!)
-- ✅ API: /api/v1/locks, /api/v1/match, /api/v1/measure
-- ✅ 38 unit тестов (все проходят)
-- ✅ 934 фото собрано
+COMPONENTS:
+- Backend: Working (port 8001)
+- Flutter Web: Working (port 8083)
+- Database: 147 locks (100% populated)
+- CV Pipeline: Fixed (scale factor bug corrected)
+- Tests: 38/38 passing
 
-## КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ (v4.4):
+YOLO TRAINING STATUS:
+- Photos: 762 collected in datafordb/
+- Model: Not trained yet
+- Need: Label in Roboflow → Export → Train
 
-### Баг калибровки scale_factor ИСПРАВЛЕН!
-- **Было:** max(w,h) / 10.0 → 33mm вместо 10mm (ОШИБКА 230%!)
-- **Стало:** min(w,h) / 10.0 → правильная ширина слота 10mm
+================================================================================
+CRITICAL REFERENCE: EURO CYLINDER
+================================================================================
 
-### Файлы изменены:
-- cv_pipeline/src/lock_pipeline.py
-- cv_pipeline/src/geometry_calculator.py  
-- cv_pipeline/train_yolo.py
-- cv_pipeline/dataset/lock_dataset.yaml
+This is the MOST IMPORTANT object - used for calibration!
 
-## ЧТО НУЖНО СДЕЛАТЬ:
-1. Обработать 934 фото (извлечь из видео или использовать IMG_*)
-2. Загрузить в Roboflow
-3. Разметить 4 класса (lock_plate, cylinder_hole, mounting_hole, handle_square)
-4. Обучить YOLO: python train_yolo.py --epochs 100
+SVG Source: mask/euro_profile_exact.svg
 
-## РАЗМЕРЫ ЕВРОЦИЛИНДРА (ЭТАЛОН!):
-```
-Total height: 33mm
-Top circle: 17mm diameter
-Slot width: 10mm ← ЭТО ДЛЯ КАЛИБРОВКИ
-Bottom semicircle: 10mm diameter
+Exact dimensions:
+- Total height: 33mm
+- Top circle: 17mm diameter (r=8.5mm)
+- Slot width: 10mm <-- CALIBRATION REFERENCE
+- Bottom semicircle: 10mm diameter (r=5mm)
 
-pixels_per_mm = detected_slot_width_pixels / 10.0
-```
+Calibration formula:
+  pixels_per_mm = detected_slot_width_pixels / 10.0
 
-## КЛЮЧЕВЫЕ ФАЙЛЫ:
-- mask/euro_profile_exact.svg - точные размеры цилиндра (ИСТОЧНИК ИСТИНЫ)
-- cv_pipeline/src/lock_pipeline.py - CV пайплайн (ИСПРАВЛЕН)
-- cv_pipeline/src/geometry_calculator.py - расчёты размеров
-- cv_pipeline/train_yolo.py - обучение YOLO
-- ROBOFLOW_INSTRUCTION.md - инструкция по разметке
+CRITICAL: Without correct calibration, ALL measurements are wrong!
 
-## ЗАПУСК:
-Backend: cd backend && uvicorn app.main:app --port 8001
-Flutter: cd mobile_app && flutter run
-Тесты: cd backend && pytest
+================================================================================
+YOLO CLASSES (3 classes)
+================================================================================
 
-## ЭКСПЕРТЫ:
-KIMI - Architecture
-GROK - Code Analysis  
-GPT - Code Generation
-GEMINI - ML/CV
-MASTER - Consensus
+Class 0: lock_plate
+- Description: Металлическая планка замка
+- Label: Draw around entire visible lock plate
 
-## ВАЖНО!
-Класс cylinder_hole (ID=1) - самый важный:
-- Это объект для детекции YOLO
-- Это также эталон масштаба для калибровки
-- 10mm слот - для расчёта pixels_per_mm
+Class 1: cylinder_hole (CRITICAL!)
+- Description: Euro cylinder hole (33x17mm)
+- Label: Draw around ENTIRE silhouette (not just slot!)
+- This is the SCALE CALIBRATION REFERENCE
+
+Class 2: handle_square
+- Description: Квадрат ручки (8x8mm)
+- Label: Draw rectangle around square hole
+
+NOTE: mounting_hole REMOVED - not needed for center distance measurement
+
+================================================================================
+KEY MEASUREMENTS
+================================================================================
+
+Center Distance:
+- Measured from: cylinder center → handle square center
+- NOT from cylinder to mounting holes!
+- Range: 50-92mm
+- Tolerance: ±3mm
+
+Backset:
+- Measured from: cylinder center → handle square center
+- Same as center distance in this project
+- Range: 20-68mm
+- Tolerance: ±2mm
+
+Plate dimensions:
+- Width: 3-8mm
+- Height: 150-280mm
+
+================================================================================
+DATABASE (147 locks - 100% populated)
+================================================================================
+
+All fields now filled:
+- backset: 100%
+- center_distance: 100%
+- plate_width: 100%
+- plate_height: 100%
+- body_width: 100%
+- body_height: 100%
+- square_hole_size: 100%
+
+Filled based on series (Apecs catalog) + defaults
+
+================================================================================
+NEXT STEPS (Priority Order)
+================================================================================
+
+1. Upload photos to Roboflow (762 photos in "datafordb/")
+2. Create 3 classes: lock_plate, cylinder_hole, handle_square
+3. Label all photos
+4. Export as YOLOv8 OBB
+5. Train: cd cv_pipeline && python train_yolo.py --epochs 100
+6. Test accuracy (±0.5-1.0mm target)
+
+================================================================================
+COMMANDS
+================================================================================
+
+Start backend:
+cd backend && DATABASE_URL=sqlite+aiosqlite:///./locks.db uvicorn app.main:app --host 127.0.0.1 --port 8001
+
+Start Flutter:
+cd mobile_app && flutter run
+
+Build Flutter web:
+cd mobile_app && flutter build web
+python3 -m http.server 8083 -d build/web/
+
+Run tests:
+cd backend && pytest
+
+Train YOLO:
+cd cv_pipeline && python train_yolo.py --epochs 100
+
+================================================================================
+IMPORTANT INSIGHTS
+================================================================================
+
+The cylinder_hole (class 1) serves TWO purposes:
+1. Object detection (YOLO)
+2. Scale calibration (10mm slot width)
+
+Without correct calibration, ALL measurements are wrong!
+
+Center distance = cylinder center → handle square center
+(NOT cylinder → mounting holes!)
+
+Scale factor formula:
+  scale_factor = min(bbox_width, bbox_height) / 10.0
+
+================================================================================
+KEY FILES
+================================================================================
+
+- mask/euro_profile_exact.svg - AR mask (SOURCE OF TRUTH)
+- cv_pipeline/src/lock_pipeline.py - CV pipeline (FIXED scale factor)
+- cv_pipeline/src/geometry_calculator.py - Geometry calculations
+- cv_pipeline/dataset/lock_dataset.yaml - YOLO config (3 classes)
+- backend/app/services/matching_service.py - Matching algorithm
+
+================================================================================

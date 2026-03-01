@@ -1,5 +1,32 @@
 # Журнал разработки
 
+## v4.4.0 - YOLO & Documentation Update (01.03.2026)
+
+### Исправления
+- Критический баг: scale_factor теперь использует min(w,h) вместо max(w,h)
+- Добавлена валидация aspect ratio (1.5-4.0)
+- Добавлена валидация scale factor (5-50 px/mm)
+
+### Изменения YOLO классов
+- Удалён класс mounting_hole (не нужен для center distance)
+- Теперь 3 класса: lock_plate, cylinder_hole, handle_square
+- Обновлены конфиги: lock_dataset.yaml, classes.txt
+
+### Документация
+- Заполнены все 13 пустых placeholder файлов (02-17 серия)
+- Добавлен LICENSE (MIT)
+- Добавлены GitHub templates: issue, PR
+- Обновлены все ссылки на классы
+
+### Очистка
+- Удалён subsystem1/ (legacy)
+- Удалены одноразовые файлы: info.txt, idealist.txt, analysis_report.txt
+- Удалены неиспользуемые маски в mask/
+- Удалены Zone.Identifier файлы
+
+### Тесты
+- 38/38 тестов проходят
+
 ## v0.1.0 - MVP (21.02.2026)
 
 ### Создано
