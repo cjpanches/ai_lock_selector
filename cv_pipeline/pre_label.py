@@ -24,9 +24,13 @@ from edge_detector import EdgeDetector
 CLASSES = {
     "lock_plate": 0,
     "cylinder_hole": 1,
-    "mounting_hole": 2,
-    "handle_square": 3,
+    "handle_square": 2,
 }
+
+DIN_SLOT_WIDTH_MM = 10.0
+MIN_SCALE_FACTOR = 5.0
+MAX_SCALE_FACTOR = 50.0
+VALID_ASPECT_RATIO_RANGE = (1.5, 4.0)
 
 
 def yolo_format(x_center, y_center, width, height, img_width, img_height):
@@ -44,12 +48,39 @@ def yolo_format(x_center, y_center, width, height, img_width, img_height):
     return x_center_norm, y_center_norm, width_norm, height_norm
 
 
+def calculate_scale_from_marker(contours):
+    """
+    Calculate scale factor from detected Euro cylinder marker.
+    Uses the 10mm slot width as reference.
+    
+    Returns:
+        float: pixels_per_mm scale factor, or None if marker not found
+    """
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        area = cv2.contourArea(contour)
+        
+        if area < 100:
+            continue
+        
+        aspect = max(w, h) / min(w, h) if min(w, h) > 0 else 0
+        
+        if VALID_ASPECT_RATIO_RANGE[0] <= aspect <= VALID_ASPECT_RATIO_RANGE[1]:
+            slot_width_px = min(w, h)
+            scale = slot_width_px / DIN_SLOT_WIDTH_MM
+            
+            if MIN_SCALE_FACTOR <= scale <= MAX_SCALE_FACTOR:
+                return scale
+    
+    return None
+
+
 def process_image(image_path: str, visualize: bool = False):
     """Process single image and return YOLO annotations"""
     img = cv2.imread(image_path)
     if img is None:
         print(f"Error: Cannot read image {image_path}")
-        return []
+        return [], None
     
     img_height, img_width = img.shape[:2]
     annotations = []
@@ -63,9 +94,14 @@ def process_image(image_path: str, visualize: bool = False):
     
     if not contours:
         print(f"Warning: No contours found in {image_path}")
-        return []
+        return [], None
     
-    scale_factor = 15.0
+    scale_factor = calculate_scale_from_marker(contours)
+    if scale_factor is None:
+        print(f"Warning: Cannot calculate scale factor for {image_path} - no valid marker detected, skipping")
+        return [], None
+    
+    print(f"  Detected scale factor: {scale_factor:.2f} px/mm")
     
     plate_contour = analyzer.find_plate_contour(contours)
     if plate_contour:
@@ -95,20 +131,6 @@ def process_image(image_path: str, visualize: bool = False):
             "height": h_norm,
         })
     
-    mounting_holes = analyzer.find_mounting_holes(contours, scale_factor, expected_count=2)
-    for hole in mounting_holes:
-        x, y, w, h = hole.bounding_box
-        x_center, y_center, w_norm, h_norm = yolo_format(
-            x + w/2, y + h/2, w, h, img_width, img_height
-        )
-        annotations.append({
-            "class_id": CLASSES["mounting_hole"],
-            "x_center": x_center,
-            "y_center": y_center,
-            "width": w_norm,
-            "height": h_norm,
-        })
-    
     handle_square = analyzer.find_handle_square(contours, scale_factor)
     if handle_square:
         x, y, w, h = handle_square.bounding_box
@@ -125,7 +147,7 @@ def process_image(image_path: str, visualize: bool = False):
     
     if visualize and annotations:
         vis_img = img.copy()
-        colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0)]
+        colors = [(255, 0, 0), (0, 255, 0), (255, 255, 0)]
         
         for ann in annotations:
             cls_id = ann["class_id"]
@@ -142,7 +164,7 @@ def process_image(image_path: str, visualize: bool = False):
         cv2.imwrite(output_path, vis_img)
         print(f"Saved visualization: {output_path}")
     
-    return annotations
+    return annotations, scale_factor
 
 
 def save_yolo_annotations(annotations, output_path):
@@ -185,19 +207,28 @@ def main():
     print(f"Processing...")
     
     success_count = 0
+    skipped_count = 0
     for img_path in image_files:
         label_path = output_dir / f"{img_path.stem}.txt"
         
-        annotations = process_image(str(img_path), args.visualize)
+        result = process_image(str(img_path), args.visualize)
+        
+        if result is None:
+            skipped_count += 1
+            continue
+            
+        annotations, scale_factor = result
         
         if annotations:
             save_yolo_annotations(annotations, str(label_path))
             success_count += 1
-            print(f"  {img_path.name} -> {label_path.name} ({len(annotations)} objects)")
+            print(f"  {img_path.name} -> {label_path.name} ({len(annotations)} objects, scale={scale_factor:.2f})")
         else:
-            print(f"  {img_path.name} -> No annotations")
+            skipped_count += 1
+            print(f"  {img_path.name} -> No annotations (scale={scale_factor:.2f})")
     
     print(f"\nDone! Processed {success_count}/{len(image_files)} images")
+    print(f"Skipped: {skipped_count} images")
     print(f"Labels saved to: {output_dir}")
     print("\nClasses:")
     for name, cid in CLASSES.items():

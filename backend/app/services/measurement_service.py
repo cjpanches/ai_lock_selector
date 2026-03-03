@@ -1,10 +1,13 @@
 import base64
 import io
+import logging
 from PIL import Image
 import numpy as np
 import cv2
 from datetime import datetime
 from app.models.schemas import LockProfileDTO, LockDimensionsDTO, MountingHoleDTO
+
+logger = logging.getLogger(__name__)
 
 class MeasurementService:
     def __init__(self):
@@ -31,6 +34,10 @@ class MeasurementService:
             
             contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             
+            mounting_holes = await self._find_mounting_holes(contours, scale_factor)
+            handle_square = await self._find_handle_square(contours, scale_factor)
+            cylinder_hole = await self._find_cylinder_hole(contours, scale_factor, marker_x, marker_y)
+            
             dimensions = await self._calculate_dimensions(
                 contours, 
                 scale_factor,
@@ -38,9 +45,6 @@ class MeasurementService:
                 handle_square=handle_square,
                 mounting_holes=mounting_holes
             )
-            mounting_holes = await self._find_mounting_holes(contours, scale_factor)
-            handle_square = await self._find_handle_square(contours, scale_factor)
-            cylinder_hole = await self._find_cylinder_hole(contours, scale_factor, marker_x, marker_y)
             
             confidence = self._calculate_confidence(dimensions, mounting_holes, handle_square)
             
@@ -62,9 +66,10 @@ class MeasurementService:
         plate_contour = self._find_plate_contour(contours)
         
         if plate_contour is None:
+            logger.warning("Plate contour not found in image")
             return {
-                "backset": 0,
-                "center_distance": 0,
+                "backset": None,
+                "center_distance": None,
                 "plate_width": 0,
                 "plate_height": 0,
                 "plate_thickness": 3.0,
@@ -96,8 +101,8 @@ class MeasurementService:
             center_distance = backset
         
         return {
-            "backset": backset if backset > 0 else 55.0,
-            "center_distance": center_distance if center_distance > 0 else 72.0,
+            "backset": backset if backset > 0 else None,
+            "center_distance": center_distance if center_distance > 0 else None,
             "plate_width": plate_width,
             "plate_height": plate_height,
             "plate_thickness": 3.0,
@@ -182,19 +187,24 @@ class MeasurementService:
     
     def _calculate_confidence(self, dimensions, mounting_holes, handle_square):
         """Расчёт достоверности измерений"""
-        confidence = 0.4
+        confidence = 0.0
         
-        if len(mounting_holes) >= 2:
-            confidence += 0.2
+        backset = dimensions.get("backset")
+        center_distance = dimensions.get("center_distance")
+        plate_width = dimensions.get("plate_width", 0)
+        
+        if mounting_holes and len(mounting_holes) >= 2:
+            confidence += 0.3
         
         if handle_square is not None:
+            confidence += 0.3
+        
+        if backset is not None and 20 <= backset <= 100:
             confidence += 0.2
         
-        dims = dimensions
-        if dims["backset"] > 0 and dims["backset"] < 100:
-            confidence += 0.1
+        if center_distance is not None and 40 <= center_distance <= 120:
+            confidence += 0.2
         
-        if dims["plate_width"] > 20 and dims["plate_width"] < 50:
-            confidence += 0.1
+        logger.info(f"Measurement confidence: {confidence:.2f} (backset={backset}, center_dist={center_distance}, plate_width={plate_width:.1f})")
         
         return min(confidence, 1.0)

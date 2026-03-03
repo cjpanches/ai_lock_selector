@@ -1,179 +1,135 @@
 ================================================================================
-OPENCODE STARTUP - AI LOCK SELECTOR PROJECT
+OPENCODE STARTUP - PROJECT MANAGER
 ================================================================================
-Version: 4.5.0
-Date: 2026-03-01
-Project: /home/bot/porojects/ai_lock_project
-GitHub: https://github.com/cjpanches/ai_lock_selector
-Branch: develop
+Version: 5.0.0 | Date: 2026-03-03
+================================================================================
+
+PORT MONITORING
+
+Порт   | Проект            | Статус        | Ссылка
+-------|-------------------|---------------|------------------------------
+8080   | Project Manager   | Работает      | http://localhost:8080/
+8081   | Prompt Hub       | Работает      | http://localhost:8081/prompt_dashboard.html
+8082   | AI Lock Status   | Работает      | http://localhost:8082/
+8083   | Voice Secretary  | По требованию | http://localhost:8083/
+8084   | Flutter Web      | По требованию | cd mobile_app && flutter build web
 
 ================================================================================
 QUICK START
 ================================================================================
 
-Check system status:
-- Backend: curl http://127.0.0.1:8001/health
-- Flutter Web: curl http://localhost:8083
+# Project Manager
+http://localhost:8080/
 
-Run tests:
-- cd backend && pytest
+# AI Lock Selector Status
+http://localhost:8082/
+
+# Prompt Hub
+http://localhost:8081/prompt_dashboard.html
+
+# Voice Secretary (требует запуска)
+cd /home/bot/projects/assistant-project/v2
 
 ================================================================================
 PROJECT STRUCTURE
 ================================================================================
 
-mobile_app/          - Flutter app (Riverpod + GoRouter)
-backend/             - FastAPI (SQLite, 147 locks)
-cv_pipeline/         - CV + YOLO
-AI_EXPERTS/         - Expert audits
-mask/                - AR mask (euro_profile_exact.svg - SOURCE OF TRUTH)
-datafordb/          - 762 photos for training
+/home/bot/projects/
+├── PROJECT_MANAGER/           # Система управления
+│   ├── PROJECT_MANAGER.md    # Этот файл
+│   ├── dashboard.html         # Главный дашборд
+│   └── pages/               # Страницы проектов
+├── ai_lock_project/          # AI Lock Selector
+│   ├── mobile_app/          # Flutter приложение
+│   ├── backend/             # FastAPI
+│   ├── cv_pipeline/         # YOLO
+│   └── prompt_interface/    # Prompt Hub
+└── assistant-project/       # Voice Secretary
+    └── v2/                  # Основная версия
 
 ================================================================================
-CURRENT STATUS (v4.5.0)
+PROJECTS
 ================================================================================
 
-COMPONENTS:
-- Backend: Working (port 8001)
-- Flutter Web: Working (port 8083)
-- Database: 147 locks (100% populated)
-- CV Pipeline: Fixed (scale factor bug corrected)
-- Tests: 38/38 passing
+1. AI Lock Selector
+   Описание: Мобильное приложение для измерения дверных замков через AR
+   Статус: Активен
+   Ссылка: http://localhost:8082/
+   Компоненты:
+   - Backend API (port 8001)
+   - Flutter Web (port 8084, по требованию)
+   - Database: 147 замков
+   - YOLO: Не обучен
 
-YOLO TRAINING STATUS:
-- Photos: 762 collected in datafordb/
-- Model: Not trained yet
-- Need: Label in Roboflow → Export → Train
+2. Prompt Hub
+   Описание: Система управления мастер-промптами
+   Статус: Активен
+   Ссылка: http://localhost:8081/prompt_dashboard.html
+   Промпты:
+   - AI_MASTER - Универсальный для AI
+   - STARTUP - Контекст проекта
+   - AUDIT - Шаблон аудита
+   - FIX_BUG - Шаблон бага
 
-================================================================================
-CRITICAL REFERENCE: EURO CYLINDER
-================================================================================
-
-This is the MOST IMPORTANT object - used for calibration!
-
-SVG Source: mask/euro_profile_exact.svg
-
-Exact dimensions:
-- Total height: 33mm
-- Top circle: 17mm diameter (r=8.5mm)
-- Slot width: 10mm <-- CALIBRATION REFERENCE
-- Bottom semicircle: 10mm diameter (r=5mm)
-
-Calibration formula:
-  pixels_per_mm = detected_slot_width_pixels / 10.0
-
-CRITICAL: Without correct calibration, ALL measurements are wrong!
-
-================================================================================
-YOLO CLASSES (3 classes)
-================================================================================
-
-Class 0: lock_plate
-- Description: Metallicheskaya planeta zamka
-- Label: Draw around entire visible lock plate
-
-Class 1: cylinder_hole (CRITICAL!)
-- Description: Euro cylinder hole (33x17mm)
-- Label: Draw around ENTIRE silhouette (not just slot!)
-- This is the SCALE CALIBRATION REFERENCE
-
-Class 2: handle_square
-- Description: Kvadratruchki (8x8mm)
-- Label: Draw rectangle around square hole
-
-NOTE: mounting_hole REMOVED - not needed for center distance measurement
-
-================================================================================
-KEY MEASUREMENTS
-================================================================================
-
-Center Distance:
-- Measured from: cylinder center → handle square center
-- NOT from cylinder to mounting holes!
-- Range: 50-92mm
-- Tolerance: ±3mm
-
-Backset:
-- Measured from: cylinder center → handle square center
-- Same as center distance in this project
-- Range: 20-68mm
-- Tolerance: ±2mm
-
-Plate dimensions:
-- Width: 3-8mm
-- Height: 150-280mm
-
-================================================================================
-DATABASE (147 locks - 100% populated)
-================================================================================
-
-All fields now filled:
-- backset: 100%
-- center_distance: 100%
-- plate_width: 100%
-- plate_height: 100%
-- body_width: 100%
-- body_height: 100%
-- square_hole_size: 100%
-
-Filled based on series (Apecs catalog) + defaults
-
-================================================================================
-NEXT STEPS (Priority Order)
-================================================================================
-
-1. Upload photos to Roboflow (762 photos in "datafordb/")
-2. Create 3 classes: lock_plate, cylinder_hole, handle_square
-3. Label all photos
-4. Export as YOLOv8 OBB
-5. Train: cd cv_pipeline && python train_yolo.py --epochs 100
-6. Test accuracy (±0.5-1.0mm target)
+3. Voice Secretary
+   Описание: Голосовой секретарь с AI анализом
+   Статус: Готов (требует запуска)
+   Ссылка: http://localhost:8083/
+   Требования:
+   - Flask сервер
+   - Whisper (транскрипция)
+   - Ollama (AI анализ)
 
 ================================================================================
 COMMANDS
 ================================================================================
 
-Start backend:
-cd backend && DATABASE_URL=sqlite+aiosqlite:///./locks.db uvicorn app.main:app --host 127.0.0.1 --port 8001
+# Запуск Project Manager
+cd /home/bot/projects/PROJECT_MANAGER
+python3 -m http.server 8080
 
-Start Flutter:
-cd mobile_app && flutter run
+# Запуск Prompt Hub
+cd /home/bot/projects/ai_lock_project/prompt_interface
+python3 -m http.server 8081
 
-Build Flutter web:
-cd mobile_app && flutter build web
-python3 -m http.server 8083 -d build/web/
+# Запуск AI Lock Status
+cd /home/bot/projects
+python3 -m http.server 8082
 
-Run tests:
-cd backend && pytest
+# Запуск Voice Secretary
+cd /home/bot/projects/assistant-project/v2
+source ../myenv/bin/activate
+python app.py
 
-Train YOLO:
-cd cv_pipeline && python train_yolo.py --epochs 100
-
-================================================================================
-IMPORTANT INSIGHTS
-================================================================================
-
-The cylinder_hole (class 1) serves TWO purposes:
-1. Object detection (YOLO)
-2. Scale calibration (10mm slot width)
-
-Without correct calibration, ALL measurements are wrong!
-
-Center distance = cylinder center → handle square center
-(NOT cylinder → mounting holes!)
-
-Scale factor formula:
-  scale_factor = min(bbox_width, bbox_height) / 10.0
+# Flutter Web (по требованию)
+cd /home/bot/projects/ai_lock_project/mobile_app
+flutter build web
+python3 -m http.server 8084 -d build/web/
 
 ================================================================================
-KEY FILES
+AI EXCHANGE
 ================================================================================
 
-- mask/euro_profile_exact.svg - AR mask (SOURCE OF TRUTH)
-- cv_pipeline/src/lock_pipeline.py - CV pipeline (FIXED scale factor)
-- cv_pipeline/src/geometry_calculator.py - Geometry calculations
-- cv_pipeline/dataset/lock_dataset.yaml - YOLO config (3 classes)
-- backend/app/services/matching_service.py - Matching algorithm
+Для работы с внешними AI используй Prompt Hub (порт 8081):
+- Копирование промптов
+- Сохранение ответов от AI
+- Интеграция с Voice Secretary
+
+================================================================================
+KEY MEASUREMENTS (AI Lock)
+================================================================================
+
+- Center Distance: 50-92mm (±3mm)
+- Backset: 20-68mm (±2mm)
+- Euro Cylinder: 33mm height, 10mm slot width (calibration)
+
+================================================================================
+DATABASE
+================================================================================
+
+- 147 замков (100% заполнено)
+- Поля: backset, center_distance, plate_width, plate_height,
+        body_width, body_height, square_hole_size
 
 ================================================================================
 END OF STARTUP

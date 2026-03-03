@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Lock Selector - Prompt Hub</title>
+    <style>
+        :root {
+            --primary: #00d9ff;
+            --primary-dark: #00a8cc;
+            --secondary: #4ecdc4;
+            --accent: #ffe66d;
+            --danger: #ff6b6b;
+            --dark: #1a1a2e;
+            --dark-light: #16213e;
+            --card-bg: rgba(255,255,255,0.05);
+            --border: rgba(255,255,255,0.1);
+            --text: #fff;
+            --text-muted: #888;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1em;
+        }
+        
+        .version-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .nav-bar {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border: 1px solid var(--border);
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-tab {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-tab.active {
+            background: var(--primary);
+            color: #000;
+        }
+        
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: #000;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+            color: #000;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+        
+        .btn-dark {
+            background: rgba(255,255,255,0.15);
+            color: var(--text);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 16px 24px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 1em;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .search-box::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+        
+        .prompts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .prompt-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+        
+        .prompt-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(0,217,255,0.15);
+        }
+        
+        .prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .prompt-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .prompt-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+        
+        .badge-active {
+            background: var(--secondary);
+            color: #000;
+        }
+        
+        .badge-template {
+            background: var(--accent);
+            color: #000;
+        }
+        
+        .badge-master {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+        
+        .prompt-meta {
+            color: var(--text-muted);
+            font-size: 0.85em;
+            margin-bottom: 16px;
+        }
+        
+        .prompt-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .prompt-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .prompt-btn.copy {
+            background: var(--primary);
+            color: #000;
+        }
+        
+        .prompt-btn.view {
+            background: rgba(255,255,255,0.15);
+            color: var(--text);
+        }
+        
+        .prompt-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .help-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            border: 1px solid var(--border);
+        }
+        
+        .help-section h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .help-section h3 {
+            color: var(--secondary);
+            margin: 25px 0 15px;
+            font-size: 1.3em;
+        }
+        
+        .help-section p, .help-section li {
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+        
+        .help-code {
+            background: #0a0a15;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        .help-code code {
+            color: var(--secondary);
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+        
+        .help-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .help-table th, .help-table td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .help-table th {
+            color: var(--primary);
+        }
+        
+        .help-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: var(--dark-light);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 2em;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+        
+        .modal-close:hover {
+            color: var(--text);
+        }
+        
+        .modal-body pre {
+            background: #0a0a15;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .quick-actions {
+            background: linear-gradient(135deg, rgba(0,217,255,0.1) 0%, rgba(78,205,196,0.1) 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0,217,255,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .quick-actions h3 {
+            color: var(--primary);
+            font-size: 1.1em;
+        }
+        
+        .quick-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        /* AI Exchange Section */
+        .ai-exchange {
+            background: linear-gradient(135deg, rgba(102,126,234,0.15) 0%, rgba(118,75,162,0.15) 100%);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(102,126,234,0.3);
+        }
+        
+        .ai-exchange h3 {
+            color: var(--primary);
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .exchange-section {
+            margin-bottom: 20px;
+        }
+        
+        .exchange-section label {
+            display: block;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .exchange-output {
+            background: #0a0a15;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .exchange-output textarea {
+            width: 100%;
+            min-height: 120px;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+            resize: vertical;
+        }
+        
+        .exchange-output textarea:focus {
+            outline: none;
+        }
+        
+        .exchange-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .copy-success {
+            color: var(--secondary);
+            font-size: 0.9em;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .copy-success.show {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .nav-tabs, .nav-actions {
+                justify-content: center;
+            }
+            
+            .prompts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Prompt Hub <span class="version-badge">v2.0</span></h1>
+            <p class="subtitle">Система управления промптами | AI Lock Selector</p>
+        </header>
+        
+        <!-- AI Exchange Block -->
+        <div class="ai-exchange">
+            <h3>🤖 AI Exchange - Обмен между AI</h3>
+            
+            <div class="exchange-section">
+                <label>📋 Скопировать промпт для AI:</label>
+                <div class="exchange-actions">
+                    <button class="btn btn-primary" onclick="copyPromptForAI('AI_MASTER')">🤖 AI_MASTER</button>
+                    <button class="btn btn-dark" onclick="copyPromptForAI('STARTUP')">🚀 STARTUP</button>
+                    <button class="btn btn-dark" onclick="copyPromptForAI('AUDIT')">🔍 AUDIT</button>
+                </div>
+                <div class="copy-success" id="copySuccess">✓ Скопировано в буфер обмена!</div>
+            </div>
+            
+            <div style="border-top: 1px solid var(--border); margin: 20px 0;"></div>
+            
+            <!-- OpenCode → External AI Exchange -->
+            <div class="exchange-section" style="background: linear-gradient(135deg, rgba(0,217,255,0.1) 0%, rgba(78,205,196,0.1) 100%); border: 1px solid var(--primary);">
+                <label>🤖 OpenCode → Внешний AI:</label>
+                <div class="exchange-output">
+                    <textarea id="opencodeToAI" placeholder="Запрос от OpenCode для внешнего AI..."></textarea>
+                </div>
+                <div class="exchange-actions">
+                    <button class="btn btn-primary" onclick="copyOpencodeToAI()">📋 Копировать</button>
+                    <button class="btn btn-danger" onclick="clearOpencodeToAI()">🗑️ Очистить</button>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid var(--border); margin: 20px 0;"></div>
+            
+            <div class="exchange-section">
+                <label>📥 Вставь ответ от AI (Ctrl+V):</label>
+                <div class="exchange-output">
+                    <textarea id="aiResponse" placeholder="Вставь сюда ответ от ChatGPT, Claude, Gemini или другого AI..."></textarea>
+                </div>
+                <div class="exchange-actions">
+                    <button class="btn btn-secondary" onclick="saveAIResponse()">💾 Сохранить ответ</button>
+                    <button class="btn btn-danger" onclick="clearAIResponse()">🗑️ Очистить</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">4</div>
+                <div class="stat-label">Актуальных промптов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">1</div>
+                <div class="stat-label">Шаблонов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="responsesCount">0</div>
+                <div class="stat-label">Сохранённых ответов</div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="nav-bar">
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-tab="current">Актуальные</button>
+                <button class="nav-tab" data-tab="templates">Шаблоны</button>
+                <button class="nav-tab" data-tab="exchange">Ответы AI</button>
+                <button class="nav-tab" data-tab="help">Помощь</button>
+            </div>
+        </div>
+        
+        <!-- Search -->
+        <input type="text" class="search-box" placeholder="🔍 Поиск промптов..." id="searchInput">
+        
+        <!-- Content Sections -->
+        <div id="currentSection">
+            <div class="prompts-grid" id="currentGrid"></div>
+        </div>
+        
+        <div id="templatesSection" style="display:none;">
+            <div class="prompts-grid" id="templatesGrid"></div>
+        </div>
+        
+        <div id="exchangeSection" style="display:none;">
+            <div class="prompts-grid" id="responsesGrid">
+                <div class="empty-state">
+                    <p>Сохранённые ответы от AI будут здесь.</p>
+                    <p style="margin-top:10px;">Используйте блок выше для сохранения ответов.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="helpSection" style="display:none;">
+            <div class="help-section">
+                <h2>Как пользоваться Prompt Hub v2.0</h2>
+                
+                <h3>Быстрый старт</h3>
+                <ol>
+                    <li>Скопируйте промпт через кнопку <strong>🤖 AI_MASTER</strong></li>
+                    <li>Вставьте в ChatGPT/Claude/Gemini</li>
+                    <li>Получите ответ и вставьте в поле <strong>📥 Вставь ответ от AI</strong></li>
+                    <li>Нажмите <strong>Сохранить ответ</strong></li>
+                </ol>
+                
+                <h3>Промпты</h3>
+                <table class="help-table">
+                    <tr><th>Промпт</th><th>Назначение</th></tr>
+                    <tr><td>🤖 AI_MASTER</td><td>Универсальный промпт для любого AI</td></tr>
+                    <tr><td>🚀 STARTUP</td><td>Контекст проекта для начала работы</td></tr>
+                    <tr><td>🔍 AUDIT</td><td>Шаблон аудита проекта</td></tr>
+                    <tr><td>📝 FIX_BUG</td><td>Шаблон описания бага</td></tr>
+                </table>
+                
+                <h3>AI Exchange</h3>
+                <p>Блок обмена позволяет:</p>
+                <ul>
+                    <li>Быстро копировать промпты для внешних AI</li>
+                    <li>Сохранять ответы от AI в файлы</li>
+                    <li>Вести историю общения с разными AI</li>
+                </ul>
+                
+                <h3>CLI Команды</h3>
+                <div class="help-code">
+                    <code>
+prompt_cli.py list              → Список промптов
+prompt_cli.py copy AI_MASTER    → Копировать в буфер
+prompt_cli.py show AUDIT        → Показать содержимое
+prompt_cli.py search "YOLO"     → Поиск по промптам
+                    </code>
+                </div>
+                
+                <h3>Файлы</h3>
+                <p>Промпты: <code>/home/bot/projects/ai_lock_project/prompt_interface/_current/</code></p>
+                <p>Ответы AI: <code>/home/bot/projects/ai_lock_project/prompt_interface/_current/AI_RESPONSES/</code></p>
+                <p>Backup: <code>/home/bot/prompt_backup_20260302/</code></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal -->
+    <div id="promptModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle" style="color:var(--primary);">Название</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <pre id="modalContent"></pre>
+            </div>
+            <div style="margin-top:20px;">
+                <button class="btn btn-primary" onclick="copyModalContent()">📋 Скопировать</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const prompts = {
+            current: [
+                {name: "AI_MASTER", title: "🤖 AI_MASTER", desc: "Универсальный промпт для любого AI", version: "1.0", date: "2026-03-02", status: "MASTER"},
+                {name: "STARTUP", title: "🚀 STARTUP", desc: "Контекст для начала сессии разработки", version: "1.0", date: "2026-03-01", status: "ACTIVE"},
+                {name: "AUDIT", title: "🔍 AUDIT", desc: "Шаблон для аудита проекта", version: "1.0", date: "2026-03-01", status: "ACTIVE"},
+                {name: "FIX_BUG", title: "📝 FIX_BUG", desc: "Шаблон описания бага", version: "1.0", date: "2026-03-01", status: "ACTIVE"},
+            ],
+            templates: [
+                {name: "TEMPLATE", title: "📝 Базовый шаблон", desc: "Шаблон для создания новых промптов", version: "1.0", date: "2026-03-01", status: "TEMPLATE"},
+            ],
+            responses: []
+        };
+        
+        const AI_RESPONSES_DIR = '/home/bot/projects/ai_lock_project/prompt_interface/_current/AI_RESPONSES/';
+        let currentTab = 'current';
+        
+        // Git Status для OpenCode → AI
+        const gitStatusInfo = `# Git Structure - AI Lock Selector
+
+## Ветки
+* develop          # текущая
+  master
+  remotes/origin/develop
+  remotes/origin/master
+
+## График коммитов
+* 1a81ee3 v4.5.0: Update docs, fill DB 100%, YOLO 3 classes, cleanup
+* 66a80ba fix: correct mounting_hole description, add OPENCODE_STARTUP.txt
+* 98120a9 docs: add txt versions of documentation for Roboflow
+* 07aaf44 v4.4.0: comprehensive audit, startup update, test fix
+* f3ed1a1 fix: critical scale factor calibration bug
+* 1c3c302 docs: add KIMI_STATUS_REPORT.txt - full project status for external AI
+* 9f945ce fix: correct Euro cylinder dimensions and add master prompt
+... (45 коммитов всего)
+
+## Статус
+- Текущая ветка: develop
+- HEAD: 1a81ee3 (v4.5.0)
+- Remote: https://github.com/cjpanches/ai_lock_selector
+
+## Изменения
+M OPENCODE_STARTUP.md
+M OPENCODE_STARTUP.txt
+M backend/app/services/measurement_service.py
+M cv_pipeline/pre_label.py
+?? prompt_interface/
+
+## Порты
+- 8080: PROJECT_MANAGER
+- 8081: Prompt Hub  
+- 8082: AI Lock Status
+- 8083: Voice Secretary (Flask)`;
+
+        // Set default content on load
+        document.getElementById('opencodeToAI').value = gitStatusInfo;
+        
+        // Navigation
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                currentTab = tab.dataset.tab;
+                showSection(currentTab);
+            });
+        });
+        
+        function showSection(tab) {
+            document.getElementById('currentSection').style.display = tab === 'current' ? 'block' : 'none';
+            document.getElementById('templatesSection').style.display = tab === 'templates' ? 'block' : 'none';
+            document.getElementById('exchangeSection').style.display = tab === 'exchange' ? 'block' : 'none';
+            document.getElementById('helpSection').style.display = tab === 'help' ? 'block' : 'none';
+            
+            if (tab === 'current') renderPrompts('current');
+            if (tab === 'templates') renderPrompts('templates');
+            if (tab === 'exchange') loadResponses();
+        }
+        
+        function renderPrompts(type) {
+            const list = prompts[type] || [];
+            const grid = document.getElementById(type + 'Grid');
+            
+            if (!grid) return;
+            
+            if (list.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><p>Промптов не найдено</p></div>';
+                return;
+            }
+            
+            grid.innerHTML = list.map(p => {
+                let badgeClass = 'badge-active';
+                if (p.status === 'TEMPLATE') badgeClass = 'badge-template';
+                if (p.status === 'MASTER') badgeClass = 'badge-master';
+                
+                return `
+                <div class="prompt-card" data-name="${p.name.toLowerCase()}">
+                    <div class="prompt-header">
+                        <span class="prompt-title">${p.title}</span>
+                        <span class="prompt-badge ${badgeClass}">${p.status}</span>
+                    </div>
+                    <p style="color:var(--text-muted);margin-bottom:10px;">${p.desc || ''}</p>
+                    <div class="prompt-meta">
+                        v${p.version} | ${p.date}
+                    </div>
+                    <div class="prompt-actions">
+                        <button class="prompt-btn copy" onclick="copyPromptForAI('${p.name}')">📋 Скопировать</button>
+                        <button class="prompt-btn view" onclick="viewPrompt('${p.name}')">👁️ Просмотр</button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+        
+        async function copyPromptForAI(name) {
+            try {
+                const response = await fetch('/home/bot/projects/ai_lock_project/prompt_interface/_current/' + name + '.md');
+                const content = await response.text();
+                
+                await navigator.clipboard.writeText(content);
+                
+                const successEl = document.getElementById('copySuccess');
+                successEl.classList.add('show');
+                setTimeout(() => successEl.classList.remove('show'), 3000);
+            } catch (err) {
+                alert('Ошибка копирования: ' + err.message);
+            }
+        }
+        
+        function viewPrompt(name) {
+            const allPrompts = [...prompts.current, ...prompts.templates];
+            const prompt = allPrompts.find(p => p.name === name);
+            
+            if (prompt) {
+                document.getElementById('modalTitle').textContent = prompt.title;
+                document.getElementById('modalContent').textContent = 
+`Название: ${prompt.name}
+Версия: ${prompt.version}
+Дата: ${prompt.date}
+Статус: ${prompt.status}
+
+---
+
+${prompt.desc}
+
+---
+
+Файл: /home/bot/projects/ai_lock_project/prompt_interface/_current/${prompt.name}.md
+
+Для полного содержимого используйте кнопку "Скопировать" или CLI:
+prompt_cli.py copy ${prompt.name}
+`;
+                document.getElementById('promptModal').style.display = 'block';
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('promptModal').style.display = 'none';
+        }
+        
+        function copyModalContent() {
+            const content = document.getElementById('modalContent').textContent;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('✅ Скопировано в буфер обмена!');
+            });
+        }
+        
+        function saveAIResponse() {
+            const content = document.getElementById('aiResponse').value.trim();
+            if (!content) {
+                alert('Вставьте ответ от AI сначала!');
+                return;
+            }
+            
+            // Для сохранения нужен сервер или File System Access API
+            // Показываем содержимое в модале для копирования
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const now = new Date();
+            const filename = 'response_' + now.toISOString().replace(/[:.]/g, '-').slice(0, 19) + '.txt';
+            
+            document.getElementById('modalTitle').textContent = '💾 Сохранить ответ';
+            document.getElementById('modalContent').textContent = 
+`=== AI Response ===
+Дата: ${now.toLocaleString()}
+Файл: ${filename}
+
+===
+
+${content}
+
+===
+
+Скопируйте и сохраните вручную:
+${AI_RESPONSES_DIR}${filename}
+`;
+            document.getElementById('promptModal').style.display = 'block';
+            
+            alert('📝 Содержимое ответа показано выше. Сохраните в файл вручную.\n\nПуть: ' + AI_RESPONSES_DIR);
+        }
+        
+        function clearAIResponse() {
+            if (confirm('Очистить поле с ответом?')) {
+                document.getElementById('aiResponse').value = '';
+            }
+        }
+        
+        // OpenCode → AI Functions
+        function copyOpencodeToAI() {
+            const text = document.getElementById('opencodeToAI').value;
+            if (!text) {
+                alert('Сначала введите текст в поле');
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                showCopySuccess();
+            });
+        }
+        
+        function clearOpencodeToAI() {
+            if (confirm('Очистить поле с запросом к AI?')) {
+                document.getElementById('opencodeToAI').value = '';
+            }
+        }
+        
+        function loadResponses() {
+            const grid = document.getElementById('responsesGrid');
+            // Показываем инструкцию
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <p>Для сохранения ответов:</p>
+                    <ol style="text-align:left;max-width:400px;margin:20px auto;">
+                        <li>Вставьте ответ в поле выше</li>
+                        <li>Нажмите "Сохранить ответ"</li>
+                        <li>Скопируйте содержимое из модала</li>
+                        <li>Сохраните в файл</li>
+                    </ol>
+                    <p style="margin-top:20px;">Папка: <code>${AI_RESPONSES_DIR}</code></p>
+                </div>
+            `;
+        }
+        
+        // Search
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('.prompt-card').forEach(card => {
+                const name = card.dataset.name;
+                card.style.display = name.includes(query) ? 'block' : 'none';
+            });
+        });
+        
+        // Close modal on outside click
+        window.onclick = (e) => {
+            if (e.target.id === 'promptModal') {
+                closeModal();
+            }
+        };
+        
+        // Initial render
+        renderPrompts('current');
+    </script>
+</body>
+</html>
